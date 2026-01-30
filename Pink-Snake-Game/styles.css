@@ -1,0 +1,444 @@
+/* Pink Snake Game - Styles */
+
+/* CSS Variables for Pink Theme */
+:root {
+    --primary-pink: #FF69B4;
+    --secondary-pink: #FFB6C1;
+    --accent-pink: #FF1493;
+    --background-pink: #FFF0F5;
+    --dark-pink: #C71585;
+    --light-pink: #FFC0CB;
+    --neon-pink: #FF10F0;
+    --pale-pink: #FFE4E9;
+}
+
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, var(--background-pink) 0%, var(--secondary-pink) 50%, var(--light-pink) 100%);
+    min-height: 100vh;
+    overflow: hidden;
+    touch-action: none;
+    user-select: none;
+}
+
+/* Screen Styles */
+.screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+.screen.hidden {
+    display: none;
+}
+
+.screen.overlay {
+    background: rgba(255, 105, 180, 0.85);
+    backdrop-filter: blur(5px);
+    z-index: 100;
+}
+
+.screen-content {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(255, 240, 245, 0.95));
+    padding: 40px 50px;
+    border-radius: 25px;
+    text-align: center;
+    box-shadow:
+        0 20px 60px rgba(199, 21, 133, 0.3),
+        0 0 40px rgba(255, 105, 180, 0.2),
+        inset 0 0 30px rgba(255, 255, 255, 0.5);
+    border: 3px solid var(--primary-pink);
+    max-width: 90%;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Typography */
+.game-title {
+    font-size: 3.5rem;
+    color: var(--accent-pink);
+    text-shadow:
+        3px 3px 0 var(--secondary-pink),
+        0 0 20px rgba(255, 20, 147, 0.5);
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+}
+
+.subtitle {
+    color: var(--dark-pink);
+    font-size: 1.1rem;
+    margin-bottom: 25px;
+    font-style: italic;
+}
+
+h2 {
+    font-size: 2rem;
+    color: var(--accent-pink);
+    margin-bottom: 25px;
+    text-shadow: 2px 2px 0 var(--secondary-pink);
+}
+
+/* Buttons */
+.pink-btn {
+    background: linear-gradient(135deg, var(--primary-pink), var(--accent-pink));
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    border-radius: 30px;
+    cursor: pointer;
+    margin: 10px;
+    transition: all 0.3s ease;
+    box-shadow:
+        0 5px 20px rgba(255, 20, 147, 0.4),
+        0 0 15px rgba(255, 105, 180, 0.3);
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.pink-btn:hover {
+    transform: translateY(-3px);
+    box-shadow:
+        0 8px 30px rgba(255, 20, 147, 0.5),
+        0 0 25px rgba(255, 105, 180, 0.5);
+}
+
+.pink-btn:active {
+    transform: translateY(1px);
+}
+
+.pink-btn.secondary {
+    background: linear-gradient(135deg, var(--secondary-pink), var(--light-pink));
+    color: var(--dark-pink);
+}
+
+.icon-btn {
+    background: linear-gradient(135deg, var(--primary-pink), var(--accent-pink));
+    color: white;
+    border: none;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 15px rgba(255, 20, 147, 0.4);
+}
+
+.icon-btn:hover {
+    transform: scale(1.1);
+}
+
+/* High Score Display */
+.high-score-display {
+    background: var(--pale-pink);
+    padding: 12px 25px;
+    border-radius: 20px;
+    margin-bottom: 25px;
+    color: var(--dark-pink);
+    font-weight: 600;
+    border: 2px solid var(--secondary-pink);
+}
+
+/* Controls Hint */
+.controls-hint {
+    margin-top: 25px;
+    color: var(--dark-pink);
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* Settings */
+.setting-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    margin: 10px 0;
+    background: var(--pale-pink);
+    border-radius: 15px;
+    border: 2px solid var(--secondary-pink);
+}
+
+.setting-group label {
+    color: var(--dark-pink);
+    font-weight: 600;
+}
+
+.setting-group select {
+    padding: 8px 15px;
+    border-radius: 10px;
+    border: 2px solid var(--primary-pink);
+    background: white;
+    color: var(--dark-pink);
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.setting-group input[type="checkbox"] {
+    width: 24px;
+    height: 24px;
+    accent-color: var(--accent-pink);
+    cursor: pointer;
+}
+
+/* Game Screen */
+#gameScreen {
+    flex-direction: column;
+    background: transparent;
+    padding: 10px;
+}
+
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 500px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 240, 245, 0.9));
+    border-radius: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 5px 20px rgba(199, 21, 133, 0.2);
+    border: 2px solid var(--primary-pink);
+}
+
+.score-display {
+    font-size: 1.4rem;
+    color: var(--dark-pink);
+    font-weight: bold;
+}
+
+.multiplier-display {
+    background: var(--accent-pink);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 15px;
+    font-weight: bold;
+    animation: pulse 0.5s ease infinite;
+}
+
+.multiplier-display.hidden {
+    display: none;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Canvas Container */
+.canvas-container {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(255, 240, 245, 0.95));
+    border-radius: 20px;
+    padding: 15px;
+    box-shadow:
+        0 10px 40px rgba(199, 21, 133, 0.3),
+        inset 0 0 20px rgba(255, 105, 180, 0.1);
+    border: 3px solid var(--primary-pink);
+}
+
+#gameCanvas {
+    display: block;
+    border-radius: 10px;
+    background: var(--background-pink);
+}
+
+/* Mobile Controls */
+.mobile-controls {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+    gap: 5px;
+}
+
+.control-row {
+    display: flex;
+    gap: 5px;
+}
+
+.control-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 15px;
+    background: linear-gradient(135deg, var(--primary-pink), var(--accent-pink));
+    color: white;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(255, 20, 147, 0.4);
+    transition: all 0.1s ease;
+}
+
+.control-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 10px rgba(255, 20, 147, 0.4);
+}
+
+/* Show mobile controls on touch devices */
+@media (hover: none) and (pointer: coarse) {
+    .mobile-controls {
+        display: flex;
+    }
+}
+
+@media (max-width: 600px) {
+    .mobile-controls {
+        display: flex;
+    }
+
+    .game-title {
+        font-size: 2.5rem;
+    }
+
+    .screen-content {
+        padding: 30px 25px;
+    }
+
+    .pink-btn {
+        padding: 12px 30px;
+        font-size: 1rem;
+    }
+
+    .control-btn {
+        width: 55px;
+        height: 55px;
+    }
+}
+
+/* Game Over Screen */
+.final-score {
+    margin: 20px 0;
+}
+
+.final-score p {
+    font-size: 1.5rem;
+    color: var(--dark-pink);
+    font-weight: bold;
+}
+
+.new-high-score {
+    color: var(--accent-pink);
+    font-size: 1.2rem !important;
+    animation: celebratePulse 0.5s ease infinite;
+    margin-top: 10px;
+}
+
+.new-high-score.hidden {
+    display: none;
+}
+
+@keyframes celebratePulse {
+    0%, 100% {
+        transform: scale(1);
+        text-shadow: 0 0 10px rgba(255, 20, 147, 0.5);
+    }
+    50% {
+        transform: scale(1.05);
+        text-shadow: 0 0 20px rgba(255, 20, 147, 0.8);
+    }
+}
+
+/* Particles */
+#particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.particle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: var(--accent-pink);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: particleFade 1s ease-out forwards;
+}
+
+@keyframes particleFade {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0) translateY(-50px);
+    }
+}
+
+/* Power-up indicators */
+.power-up-active {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--accent-pink), var(--neon-pink));
+    color: white;
+    padding: 10px 25px;
+    border-radius: 20px;
+    font-weight: bold;
+    animation: slideUp 0.3s ease-out;
+    z-index: 50;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* Shield effect for invincibility */
+.shield-active {
+    animation: shieldGlow 0.5s ease infinite;
+}
+
+@keyframes shieldGlow {
+    0%, 100% {
+        box-shadow:
+            0 10px 40px rgba(199, 21, 133, 0.3),
+            inset 0 0 20px rgba(255, 105, 180, 0.1),
+            0 0 30px rgba(255, 192, 203, 0.8);
+    }
+    50% {
+        box-shadow:
+            0 10px 40px rgba(199, 21, 133, 0.3),
+            inset 0 0 20px rgba(255, 105, 180, 0.1),
+            0 0 50px rgba(255, 192, 203, 1);
+    }
+}

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Pink Snake Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Start Screen -->
+    <div id="startScreen" class="screen">
+        <div class="screen-content">
+            <h1 class="game-title">Pink Snake</h1>
+            <p class="subtitle">A delightfully pink adventure</p>
+            <div class="high-score-display">
+                <span>High Score: </span>
+                <span id="startHighScore">0</span>
+            </div>
+            <button id="startBtn" class="pink-btn">Play</button>
+            <button id="settingsBtn" class="pink-btn secondary">Settings</button>
+            <div class="controls-hint">
+                <p>Arrow Keys / WASD / Swipe to move</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Screen -->
+    <div id="settingsScreen" class="screen hidden">
+        <div class="screen-content">
+            <h2>Settings</h2>
+            <div class="setting-group">
+                <label>Difficulty</label>
+                <select id="difficultySelect">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label>Sound Effects</label>
+                <input type="checkbox" id="soundToggle" checked>
+            </div>
+            <div class="setting-group">
+                <label>Music</label>
+                <input type="checkbox" id="musicToggle">
+            </div>
+            <div class="setting-group">
+                <label>Power-ups</label>
+                <input type="checkbox" id="powerupsToggle" checked>
+            </div>
+            <button id="backBtn" class="pink-btn">Back</button>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="gameScreen" class="screen hidden">
+        <div class="game-header">
+            <div class="score-display">
+                <span>Score: </span>
+                <span id="currentScore">0</span>
+            </div>
+            <div class="multiplier-display hidden" id="multiplierDisplay">
+                <span>x</span>
+                <span id="multiplierValue">2</span>
+            </div>
+            <button id="pauseBtn" class="icon-btn">II</button>
+        </div>
+        <div class="canvas-container">
+            <canvas id="gameCanvas"></canvas>
+        </div>
+        <!-- Mobile Controls -->
+        <div class="mobile-controls">
+            <button class="control-btn" data-direction="up">▲</button>
+            <div class="control-row">
+                <button class="control-btn" data-direction="left">◄</button>
+                <button class="control-btn" data-direction="down">▼</button>
+                <button class="control-btn" data-direction="right">►</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pause Screen -->
+    <div id="pauseScreen" class="screen overlay hidden">
+        <div class="screen-content">
+            <h2>Paused</h2>
+            <button id="resumeBtn" class="pink-btn">Resume</button>
+            <button id="restartBtn" class="pink-btn secondary">Restart</button>
+            <button id="quitBtn" class="pink-btn secondary">Quit</button>
+        </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameOverScreen" class="screen overlay hidden">
+        <div class="screen-content">
+            <h2>Game Over</h2>
+            <div class="final-score">
+                <p>Score: <span id="finalScore">0</span></p>
+                <p class="new-high-score hidden" id="newHighScore">New High Score!</p>
+            </div>
+            <button id="playAgainBtn" class="pink-btn">Play Again</button>
+            <button id="menuBtn" class="pink-btn secondary">Main Menu</button>
+        </div>
+    </div>
+
+    <!-- Particle Container -->
+    <div id="particles"></div>
+
+    <script src="game.js"></script>
+</body>
+</html>
