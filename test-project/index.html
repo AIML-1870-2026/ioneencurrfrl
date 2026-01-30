@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Starfield</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #c75b7a;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100vh;
+        }
+
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(20, 20, 40, 0.9);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            min-width: 280px;
+        }
+
+        .controls h2 {
+            color: #fff;
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 0 2px 10px rgba(102, 126, 234, 0.5);
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            color: #aaa;
+            font-size: 13px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .control-group .value {
+            color: #667eea;
+            font-weight: bold;
+            float: right;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.5);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.5);
+        }
+
+        .info {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 12px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .info h3 {
+            color: #ffffff;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="starfield"></canvas>
+
+    <div class="controls">
+        <h2>Starfield Controls</h2>
+
+        <div class="control-group">
+            <label>
+                Star Count
+                <span class="value" id="countValue">300</span>
+            </label>
+            <input type="range" id="starCount" min="100" max="2000" value="300" step="50">
+        </div>
+
+        <div class="control-group">
+            <label>
+                Speed
+                <span class="value" id="speedValue">5.0</span>
+            </label>
+            <input type="range" id="speed" min="0.1" max="10" value="5" step="0.1">
+        </div>
+
+        <div class="control-group">
+            <label>
+                Trail Length
+                <span class="value" id="trailValue">5</span>
+            </label>
+            <input type="range" id="trailLength" min="1" max="20" value="5" step="1">
+        </div>
+
+        <div class="control-group">
+            <label>
+                Star Size
+                <span class="value" id="sizeValue">2.0</span>
+            </label>
+            <input type="range" id="starSize" min="0.5" max="5" value="2" step="0.1">
+        </div>
+
+        <div class="control-group">
+            <label>
+                Glow Intensity
+                <span class="value" id="glowValue">10</span>
+            </label>
+            <input type="range" id="glowIntensity" min="0" max="30" value="10" step="1">
+        </div>
+    </div>
+
+    <div class="info">
+        <h3>Kritika Kandel - Interactive Starfield</h3>
+        <p>Use the controls to customize your star journey</p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        let stars = [];
+        let settings = {
+            count: 300,
+            speed: 5,
+            trailLength: 5,
+            starSize: 2,
+            glowIntensity: 10
+        };
+
+        class Star {
+            constructor() {
+                this.reset();
+                this.z = Math.random() * width;
+            }
+
+            reset() {
+                this.x = Math.random() * width - width / 2;
+                this.y = Math.random() * height - height / 2;
+                this.z = width;
+                this.prevX = this.x;
+                this.prevY = this.y;
+            }
+
+            update() {
+                this.prevX = this.x;
+                this.prevY = this.y;
+
+                this.z -= settings.speed;
+
+                if (this.z <= 0) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                const x = (this.x / this.z) * width + width / 2;
+                const y = (this.y / this.z) * height + height / 2;
+                const prevX = (this.prevX / (this.z + settings.speed)) * width + width / 2;
+                const prevY = (this.prevY / (this.z + settings.speed)) * height + height / 2;
+
+                const size = (1 - this.z / width) * settings.starSize;
+                const opacity = Math.min(1, (1 - this.z / width) * 1.5);
+
+                if (x >= 0 && x <= width && y >= 0 && y <= height) {
+                    // Only apply glow if intensity is high enough
+                    if (settings.glowIntensity > 5 && opacity > 0.7) {
+                        ctx.shadowBlur = settings.glowIntensity * 0.5;
+                        ctx.shadowColor = `rgba(255, 255, 255, ${opacity * 0.8})`;
+                    } else {
+                        ctx.shadowBlur = 0;
+                    }
+
+                    // Draw trail
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.4})`;
+                    ctx.lineWidth = size;
+                    ctx.lineCap = 'round';
+
+                    ctx.beginPath();
+                    ctx.moveTo(prevX, prevY);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+
+                    // Draw star point with higher opacity
+                    ctx.shadowBlur = settings.glowIntensity * 0.3;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.shadowBlur = 0;
+                }
+            }
+        }
+
+        function initStars() {
+            stars = [];
+            for (let i = 0; i < settings.count; i++) {
+                stars.push(new Star());
+            }
+        }
+
+        function animate() {
+            ctx.fillStyle = `rgba(199, 91, 122, ${1 / settings.trailLength})`;
+            ctx.fillRect(0, 0, width, height);
+
+            stars.forEach(star => {
+                star.update();
+                star.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        document.getElementById('starCount').addEventListener('input', (e) => {
+            settings.count = parseInt(e.target.value);
+            document.getElementById('countValue').textContent = settings.count;
+            initStars();
+        });
+
+        document.getElementById('speed').addEventListener('input', (e) => {
+            settings.speed = parseFloat(e.target.value);
+            document.getElementById('speedValue').textContent = settings.speed.toFixed(1);
+        });
+
+        document.getElementById('trailLength').addEventListener('input', (e) => {
+            settings.trailLength = parseInt(e.target.value);
+            document.getElementById('trailValue').textContent = settings.trailLength;
+        });
+
+        document.getElementById('starSize').addEventListener('input', (e) => {
+            settings.starSize = parseFloat(e.target.value);
+            document.getElementById('sizeValue').textContent = settings.starSize.toFixed(1);
+        });
+
+        document.getElementById('glowIntensity').addEventListener('input', (e) => {
+            settings.glowIntensity = parseInt(e.target.value);
+            document.getElementById('glowValue').textContent = settings.glowIntensity;
+        });
+
+        initStars();
+        animate();
+    </script>
+</body>
+</html>
