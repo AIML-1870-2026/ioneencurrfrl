@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌸 Trippy Turing Patterns Explorer 🌀</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Righteous&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #FF1493;
+            --secondary: #FF00FF;
+            --tertiary: #8B008B;
+            --glow: rgba(255, 20, 147, 0.6);
+        }
+
+        body {
+            font-family: 'Fredoka One', 'Righteous', cursive;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background: radial-gradient(ellipse at center, #FF1493 0%, #8B008B 50%, #4B0082 100%);
+            animation: backgroundPulse 5s ease-in-out infinite, backgroundRotate 60s linear infinite;
+        }
+
+        @keyframes backgroundPulse {
+            0%, 100% { background-size: 100% 100%; }
+            50% { background-size: 120% 120%; }
+        }
+
+        @keyframes backgroundRotate {
+            from { filter: hue-rotate(0deg); }
+            to { filter: hue-rotate(360deg); }
+        }
+
+        .floating-element {
+            position: fixed;
+            font-size: 2rem;
+            opacity: 0.3;
+            pointer-events: none;
+            animation: float 8s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+            25% { transform: translateY(-20px) rotate(10deg) scale(1.1); }
+            50% { transform: translateY(0) rotate(0deg) scale(1); }
+            75% { transform: translateY(20px) rotate(-10deg) scale(0.9); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #FF69B4, #FF1493, #FF00FF, #DA70D6);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease infinite;
+            text-shadow: 0 0 30px rgba(255, 20, 147, 0.8);
+            filter: drop-shadow(0 0 20px rgba(255, 0, 255, 0.5));
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .presets-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .preset-btn {
+            padding: 12px 24px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1rem;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 4px 15px var(--glow), inset 0 0 20px rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .preset-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+            transform: scale(0);
+            transition: transform 0.5s ease;
+        }
+
+        .preset-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px var(--glow), inset 0 0 30px rgba(255, 255, 255, 0.3);
+        }
+
+        .preset-btn:hover::before {
+            transform: scale(1);
+        }
+
+        .preset-btn.active {
+            animation: activePulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes activePulse {
+            0%, 100% { box-shadow: 0 4px 15px var(--glow); }
+            50% { box-shadow: 0 4px 30px var(--glow), 0 0 50px var(--glow); }
+        }
+
+        .main-area {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .canvas-container {
+            position: relative;
+            border-radius: 20px;
+            padding: 10px;
+            background: linear-gradient(45deg, #FF1493, #FF00FF, #8B008B, #FF1493);
+            background-size: 400% 400%;
+            animation: borderFlow 4s ease infinite;
+            box-shadow: 0 0 40px rgba(255, 0, 255, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes borderFlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .canvas-container::before {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 23px;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 3s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes shimmer {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        #simulationCanvas {
+            display: block;
+            border-radius: 15px;
+            cursor: crosshair;
+            animation: canvasBreathe 6s ease-in-out infinite;
+        }
+
+        @keyframes canvasBreathe {
+            0%, 100% { transform: scale(1); filter: brightness(1) blur(0px); }
+            50% { transform: scale(1.01); filter: brightness(1.05) blur(0.5px); }
+        }
+
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 300px;
+        }
+
+        .panel-section {
+            background: rgba(139, 0, 139, 0.4);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(255, 0, 255, 0.3), inset 0 0 30px rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 20, 147, 0.3);
+        }
+
+        .panel-section h3 {
+            color: #FFB6C1;
+            margin-bottom: 15px;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(255, 182, 193, 0.8);
+        }
+
+        .color-schemes {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .color-btn {
+            padding: 10px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 0.85rem;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .color-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .color-btn.active {
+            box-shadow: 0 0 20px currentColor, inset 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .color-btn.psychedelic-pink { background: linear-gradient(135deg, #FF1493, #8B008B); }
+        .color-btn.groovy-rainbow { background: linear-gradient(135deg, #FF69B4, #FFD700); }
+        .color-btn.cosmic-pink { background: linear-gradient(135deg, #FF1493, #00FFFF); }
+        .color-btn.bubblegum-dream { background: linear-gradient(135deg, #FFB6C1, #98FF98); }
+
+        .mode-toggle {
+            display: flex;
+            gap: 10px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 12px 8px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 0.8rem;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            background: rgba(255, 20, 147, 0.3);
+            color: white;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #FF1493, #FF00FF);
+            border-color: white;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 4px 15px var(--glow);
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.15);
+            box-shadow: 0 6px 25px var(--glow);
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+        }
+
+        .speed-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 10px;
+            border-radius: 5px;
+            background: linear-gradient(90deg, #4B0082, #FF00FF);
+            outline: none;
+        }
+
+        .speed-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FF69B4, #FF1493);
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(255, 105, 180, 0.8);
+        }
+
+        .info-display {
+            color: white;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .info-display p {
+            margin: 5px 0;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .mandala-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+        }
+
+        #mandalaCanvas {
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 30px rgba(255, 0, 255, 0.5);
+            animation: mandalaPulse 4s ease-in-out infinite;
+        }
+
+        @keyframes mandalaPulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(255, 0, 255, 0.5); }
+            50% { box-shadow: 0 0 50px rgba(255, 0, 255, 0.8), 0 0 80px rgba(255, 20, 147, 0.4); }
+        }
+
+        .sparkle {
+            position: fixed;
+            pointer-events: none;
+            font-size: 1.5rem;
+            animation: sparkleAnim 1s ease-out forwards;
+            z-index: 1000;
+        }
+
+        @keyframes sparkleAnim {
+            0% { opacity: 1; transform: scale(1) translateY(0); }
+            100% { opacity: 0; transform: scale(0.5) translateY(-50px); }
+        }
+
+        .tutorial-tooltip {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(139, 0, 139, 0.9);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 1rem;
+            box-shadow: 0 4px 20px rgba(255, 0, 255, 0.5);
+            animation: tooltipBounce 2s ease-in-out infinite;
+            z-index: 100;
+            cursor: pointer;
+        }
+
+        @keyframes tooltipBounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-10px); }
+        }
+
+        .brush-sizes {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .brush-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            background: rgba(255, 20, 147, 0.3);
+            color: white;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .brush-btn.active {
+            background: linear-gradient(135deg, #FF1493, #FF00FF);
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+        }
+
+        .brush-btn .dot {
+            background: white;
+            border-radius: 50%;
+        }
+
+        .fps-counter {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div id="floatingElements"></div>
+
+    <div class="container">
+        <h1>🌸 Trippy Turing Patterns Explorer 🌀</h1>
+
+        <div class="presets-row">
+            <button class="preset-btn active" data-f="0.055" data-k="0.062" onclick="setPreset(this)">⭐ Cosmic Spots</button>
+            <button class="preset-btn" data-f="0.035" data-k="0.060" onclick="setPreset(this)">☮️ Peace Stripes</button>
+            <button class="preset-btn" data-f="0.029" data-k="0.057" onclick="setPreset(this)">🌸 Flower Maze</button>
+            <button class="preset-btn" data-f="0.014" data-k="0.054" onclick="setPreset(this)">🌀 Groovy Spirals</button>
+            <button class="preset-btn" data-f="0.026" data-k="0.051" onclick="setPreset(this)">🌊 Lava Lamp Waves</button>
+            <button class="preset-btn" data-f="0.022" data-k="0.059" onclick="setPreset(this)">🔥 Trippy Chaos</button>
+        </div>
+
+        <div class="main-area">
+            <div class="canvas-container">
+                <canvas id="simulationCanvas" width="600" height="450"></canvas>
+            </div>
+
+            <div class="side-panel">
+                <div class="panel-section">
+                    <h3>🎨 Color Vibe</h3>
+                    <div class="color-schemes">
+                        <button class="color-btn psychedelic-pink active" onclick="setColorScheme('psychedelic-pink')">Psychedelic Pink</button>
+                        <button class="color-btn groovy-rainbow" onclick="setColorScheme('groovy-rainbow')">Groovy Rainbow</button>
+                        <button class="color-btn cosmic-pink" onclick="setColorScheme('cosmic-pink')">Cosmic Pink</button>
+                        <button class="color-btn bubblegum-dream" onclick="setColorScheme('bubblegum-dream')">Bubblegum Dream</button>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>✨ Interaction Mode</h3>
+                    <div class="mode-toggle">
+                        <button class="mode-btn active" onclick="setMode('disturbance')">🌊 Cosmic Disturbance</button>
+                        <button class="mode-btn" onclick="setMode('sparkle')">✨ Sparkle Trail</button>
+                    </div>
+                    <div class="brush-sizes">
+                        <button class="brush-btn" onclick="setBrushSize(10)"><div class="dot" style="width:8px;height:8px;"></div></button>
+                        <button class="brush-btn active" onclick="setBrushSize(25)"><div class="dot" style="width:14px;height:14px;"></div></button>
+                        <button class="brush-btn" onclick="setBrushSize(50)"><div class="dot" style="width:20px;height:20px;"></div></button>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>🌀 Parameter Mandala</h3>
+                    <div class="mandala-container">
+                        <canvas id="mandalaCanvas" width="200" height="200"></canvas>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>🎛️ Controls</h3>
+                    <div class="controls-row">
+                        <button class="control-btn" id="playPauseBtn" onclick="togglePlay()">⏸️</button>
+                        <button class="control-btn" onclick="resetSimulation()">🌸</button>
+                        <button class="control-btn" onclick="saveImage()">💾</button>
+                    </div>
+                    <div class="speed-control">
+                        <span>🐌</span>
+                        <input type="range" class="speed-slider" min="1" max="20" value="10" oninput="setSpeed(this.value)">
+                        <span>🚀</span>
+                    </div>
+                </div>
+
+                <div class="panel-section info-display">
+                    <p id="patternName">⭐ Cosmic Spots</p>
+                    <p>Feed Vibe: <span id="feedVal">0.055</span></p>
+                    <p>Kill Energy: <span id="killVal">0.062</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tutorial-tooltip" onclick="this.style.display='none'">
+        ✨ Drag on the canvas to create cosmic disturbances! Click to dismiss.
+    </div>
+
+    <div class="fps-counter">FPS: <span id="fpsDisplay">60</span></div>
+
+    <script>
+        // ============ FLOATING ELEMENTS ============
+        const floatingSymbols = ['☮️', '🌸', '✨', '🌀', '⭐', '💫', '🌙', '💜'];
+        const floatingContainer = document.getElementById('floatingElements');
+
+        for (let i = 0; i < 15; i++) {
+            const el = document.createElement('div');
+            el.className = 'floating-element';
+            el.textContent = floatingSymbols[Math.floor(Math.random() * floatingSymbols.length)];
+            el.style.left = Math.random() * 100 + 'vw';
+            el.style.top = Math.random() * 100 + 'vh';
+            el.style.animationDelay = Math.random() * 8 + 's';
+            el.style.animationDuration = (6 + Math.random() * 6) + 's';
+            floatingContainer.appendChild(el);
+        }
+
+        // ============ COLOR SCHEMES ============
+        const colorSchemes = {
+            'psychedelic-pink': {
+                colors: [[255, 20, 147], [255, 0, 255], [139, 0, 139]],
+                bg: ['#FF1493', '#8B008B', '#4B0082']
+            },
+            'groovy-rainbow': {
+                colors: [[255, 105, 180], [255, 140, 0], [255, 215, 0]],
+                bg: ['#FF69B4', '#FF8C00', '#FFD700']
+            },
+            'cosmic-pink': {
+                colors: [[255, 20, 147], [230, 230, 250], [0, 255, 255]],
+                bg: ['#FF1493', '#E6E6FA', '#00FFFF']
+            },
+            'bubblegum-dream': {
+                colors: [[255, 182, 193], [152, 255, 152], [255, 218, 185]],
+                bg: ['#FFB6C1', '#98FF98', '#FFDAB9']
+            }
+        };
+
+        let currentScheme = 'psychedelic-pink';
+        let currentMode = 'disturbance';
+        let brushSize = 25;
+        let isPlaying = true;
+        let simulationSpeed = 10;
+        let F = 0.055;
+        let K = 0.062;
+
+        // ============ SIMULATION SETUP ============
+        const canvas = document.getElementById('simulationCanvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+
+        // Gray-Scott simulation grids
+        let gridA = [];
+        let gridB = [];
+        let nextA = [];
+        let nextB = [];
+
+        const dA = 1.0;
+        const dB = 0.5;
+
+        function initGrids() {
+            gridA = [];
+            gridB = [];
+            nextA = [];
+            nextB = [];
+
+            for (let x = 0; x < width; x++) {
+                gridA[x] = [];
+                gridB[x] = [];
+                nextA[x] = [];
+                nextB[x] = [];
+                for (let y = 0; y < height; y++) {
+                    gridA[x][y] = 1;
+                    gridB[x][y] = 0;
+                    nextA[x][y] = 1;
+                    nextB[x][y] = 0;
+                }
+            }
+
+            // Seed with random spots
+            for (let i = 0; i < 20; i++) {
+                const cx = Math.floor(Math.random() * (width - 40)) + 20;
+                const cy = Math.floor(Math.random() * (height - 40)) + 20;
+                const r = 10 + Math.random() * 10;
+
+                for (let x = -r; x <= r; x++) {
+                    for (let y = -r; y <= r; y++) {
+                        if (x * x + y * y < r * r) {
+                            const px = Math.floor(cx + x);
+                            const py = Math.floor(cy + y);
+                            if (px >= 0 && px < width && py >= 0 && py < height) {
+                                gridB[px][py] = 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        function laplacian(grid, x, y) {
+            const xl = (x - 1 + width) % width;
+            const xr = (x + 1) % width;
+            const yt = (y - 1 + height) % height;
+            const yb = (y + 1) % height;
+
+            return grid[xl][y] + grid[xr][y] + grid[x][yt] + grid[x][yb]
+                   + 0.05 * (grid[xl][yt] + grid[xr][yt] + grid[xl][yb] + grid[xr][yb])
+                   - 4.2 * grid[x][y];
+        }
+
+        function simulate() {
+            const dt = 1.0;
+
+            for (let x = 0; x < width; x++) {
+                for (let y = 0; y < height; y++) {
+                    const a = gridA[x][y];
+                    const b = gridB[x][y];
+                    const lapA = laplacian(gridA, x, y);
+                    const lapB = laplacian(gridB, x, y);
+                    const reaction = a * b * b;
+
+                    nextA[x][y] = a + (dA * lapA - reaction + F * (1 - a)) * dt;
+                    nextB[x][y] = b + (dB * lapB + reaction - (K + F) * b) * dt;
+
+                    nextA[x][y] = Math.max(0, Math.min(1, nextA[x][y]));
+                    nextB[x][y] = Math.max(0, Math.min(1, nextB[x][y]));
+                }
+            }
+
+            [gridA, nextA] = [nextA, gridA];
+            [gridB, nextB] = [nextB, gridB];
+        }
+
+        function render() {
+            const imageData = ctx.createImageData(width, height);
+            const data = imageData.data;
+            const scheme = colorSchemes[currentScheme];
+            const time = Date.now() * 0.001;
+
+            for (let x = 0; x < width; x++) {
+                for (let y = 0; y < height; y++) {
+                    const idx = (y * width + x) * 4;
+                    const b = gridB[x][y];
+
+                    // Color interpolation with time-based cycling
+                    const t = (b + Math.sin(time * 0.5) * 0.1 + 0.1) * 2;
+                    const t1 = Math.max(0, Math.min(1, t));
+                    const t2 = Math.max(0, Math.min(1, t - 1));
+
+                    let r, g, bl;
+                    if (t < 1) {
+                        r = scheme.colors[0][0] * (1 - t1) + scheme.colors[1][0] * t1;
+                        g = scheme.colors[0][1] * (1 - t1) + scheme.colors[1][1] * t1;
+                        bl = scheme.colors[0][2] * (1 - t1) + scheme.colors[1][2] * t1;
+                    } else {
+                        r = scheme.colors[1][0] * (1 - t2) + scheme.colors[2][0] * t2;
+                        g = scheme.colors[1][1] * (1 - t2) + scheme.colors[2][1] * t2;
+                        bl = scheme.colors[1][2] * (1 - t2) + scheme.colors[2][2] * t2;
+                    }
+
+                    data[idx] = r;
+                    data[idx + 1] = g;
+                    data[idx + 2] = bl;
+                    data[idx + 3] = 255;
+                }
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        // ============ MANDALA ============
+        const mandalaCanvas = document.getElementById('mandalaCanvas');
+        const mandalaCtx = mandalaCanvas.getContext('2d');
+
+        function drawMandala() {
+            const size = 200;
+            const center = size / 2;
+
+            mandalaCtx.clearRect(0, 0, size, size);
+
+            // Draw gradient background
+            const gradient = mandalaCtx.createRadialGradient(center, center, 0, center, center, center);
+            gradient.addColorStop(0, '#FF1493');
+            gradient.addColorStop(0.5, '#8B008B');
+            gradient.addColorStop(1, '#4B0082');
+            mandalaCtx.fillStyle = gradient;
+            mandalaCtx.beginPath();
+            mandalaCtx.arc(center, center, center, 0, Math.PI * 2);
+            mandalaCtx.fill();
+
+            // Draw parameter regions as petals
+            const petals = 12;
+            for (let i = 0; i < petals; i++) {
+                const angle = (i / petals) * Math.PI * 2;
+                const nextAngle = ((i + 1) / petals) * Math.PI * 2;
+
+                mandalaCtx.beginPath();
+                mandalaCtx.moveTo(center, center);
+                mandalaCtx.arc(center, center, center - 5, angle, nextAngle);
+                mandalaCtx.closePath();
+
+                const hue = (i / petals) * 60 + 300; // Pink to magenta range
+                mandalaCtx.fillStyle = `hsla(${hue}, 100%, 50%, 0.3)`;
+                mandalaCtx.fill();
+                mandalaCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                mandalaCtx.stroke();
+            }
+
+            // Draw concentric rings
+            for (let r = 20; r < center; r += 25) {
+                mandalaCtx.beginPath();
+                mandalaCtx.arc(center, center, r, 0, Math.PI * 2);
+                mandalaCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                mandalaCtx.stroke();
+            }
+
+            // Draw current position
+            const fNorm = (F - 0.01) / 0.05;
+            const kNorm = (K - 0.05) / 0.02;
+            const posAngle = kNorm * Math.PI * 2;
+            const posRadius = fNorm * (center - 20) + 20;
+            const posX = center + Math.cos(posAngle) * posRadius;
+            const posY = center + Math.sin(posAngle) * posRadius;
+
+            mandalaCtx.beginPath();
+            mandalaCtx.arc(posX, posY, 8, 0, Math.PI * 2);
+            mandalaCtx.fillStyle = '#FFFFFF';
+            mandalaCtx.fill();
+            mandalaCtx.strokeStyle = '#FF00FF';
+            mandalaCtx.lineWidth = 2;
+            mandalaCtx.stroke();
+
+            // Animate glow
+            const time = Date.now() * 0.003;
+            const glowSize = 12 + Math.sin(time) * 4;
+            mandalaCtx.beginPath();
+            mandalaCtx.arc(posX, posY, glowSize, 0, Math.PI * 2);
+            mandalaCtx.strokeStyle = `rgba(255, 0, 255, ${0.5 + Math.sin(time) * 0.3})`;
+            mandalaCtx.lineWidth = 2;
+            mandalaCtx.stroke();
+        }
+
+        mandalaCanvas.addEventListener('click', (e) => {
+            const rect = mandalaCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left - 100;
+            const y = e.clientY - rect.top - 100;
+            const angle = Math.atan2(y, x);
+            const radius = Math.sqrt(x * x + y * y);
+
+            const fNorm = Math.max(0, Math.min(1, (radius - 20) / 80));
+            const kNorm = ((angle + Math.PI) / (Math.PI * 2)) % 1;
+
+            F = 0.01 + fNorm * 0.05;
+            K = 0.05 + kNorm * 0.02;
+
+            document.getElementById('feedVal').textContent = F.toFixed(3);
+            document.getElementById('killVal').textContent = K.toFixed(3);
+            document.getElementById('patternName').textContent = '🌀 Custom Vibe';
+
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+        });
+
+        // ============ INTERACTION ============
+        let isMouseDown = false;
+        let sparkles = [];
+        let persistentBlobs = []; // Gel pad blobs that stay and slowly fade
+
+        canvas.addEventListener('mousedown', (e) => {
+            isMouseDown = true;
+            handleInteraction(e, true);
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isMouseDown) handleInteraction(e, false);
+        });
+
+        canvas.addEventListener('mouseup', () => isMouseDown = false);
+        canvas.addEventListener('mouseleave', () => isMouseDown = false);
+
+        // Touch support for mobile
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            handleInteraction(touch, true);
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            handleInteraction(touch, false);
+        });
+
+        function handleInteraction(e, isTap) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = width / rect.width;
+            const scaleY = height / rect.height;
+            const x = Math.floor((e.clientX - rect.left) * scaleX);
+            const y = Math.floor((e.clientY - rect.top) * scaleY);
+
+            if (currentMode === 'disturbance') {
+                // Create a persistent gel blob that stays on screen
+                const radius = brushSize;
+
+                // Add persistent blob - like pressing on a gel pad
+                persistentBlobs.push({
+                    x: x,
+                    y: y,
+                    radius: radius,
+                    strength: 1.0  // Full strength - completely solid
+                });
+
+                // Immediately create the blob visually
+                for (let dx = -radius; dx <= radius; dx++) {
+                    for (let dy = -radius; dy <= radius; dy++) {
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < radius) {
+                            const px = x + dx;
+                            const py = y + dy;
+                            if (px >= 0 && px < width && py >= 0 && py < height) {
+                                const strength = 1 - (dist / radius);
+                                gridA[px][py] = 0;
+                                gridB[px][py] = strength;
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Sparkle trail mode
+                createSparkle(e.clientX, e.clientY);
+
+                // Create smaller persistent blob
+                const radius = 15;
+                persistentBlobs.push({
+                    x: x,
+                    y: y,
+                    radius: radius,
+                    strength: 1.0,  // Full strength for visibility
+                    age: 0
+                });
+
+                for (let dx = -radius; dx <= radius; dx++) {
+                    for (let dy = -radius; dy <= radius; dy++) {
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < radius) {
+                            const px = x + dx;
+                            const py = y + dy;
+                            if (px >= 0 && px < width && py >= 0 && py < height) {
+                                const strength = 1 - (dist / radius);
+                                gridB[px][py] = Math.min(1, gridB[px][py] + strength * 0.7);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Update persistent blobs - keeps them on screen permanently like gel pad
+        function updatePersistentBlobs() {
+            for (let i = 0; i < persistentBlobs.length; i++) {
+                const blob = persistentBlobs[i];
+
+                // Reinforce the blob shape each frame - stays forever
+                const radius = blob.radius;
+                for (let dx = -radius; dx <= radius; dx++) {
+                    for (let dy = -radius; dy <= radius; dy++) {
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < radius) {
+                            const px = blob.x + dx;
+                            const py = blob.y + dy;
+                            if (px >= 0 && px < width && py >= 0 && py < height) {
+                                // Solid blob - very visible
+                                const distStrength = 1 - (dist / radius);
+
+                                // Force the blob to be fully visible - override simulation
+                                gridB[px][py] = distStrength * blob.strength;
+                                gridA[px][py] = 1 - (distStrength * blob.strength);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Clear all blobs (called on reset)
+        function clearBlobs() {
+            persistentBlobs = [];
+        }
+
+        function createSparkle(x, y) {
+            const symbols = ['✨', '⭐', '💫', '🌸', '💜'];
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            sparkle.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+            sparkle.style.left = x + 'px';
+            sparkle.style.top = y + 'px';
+            document.body.appendChild(sparkle);
+
+            setTimeout(() => sparkle.remove(), 1000);
+        }
+
+        // ============ CONTROLS ============
+        function setPreset(btn) {
+            F = parseFloat(btn.dataset.f);
+            K = parseFloat(btn.dataset.k);
+
+            document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            document.getElementById('feedVal').textContent = F.toFixed(3);
+            document.getElementById('killVal').textContent = K.toFixed(3);
+            document.getElementById('patternName').textContent = btn.textContent;
+        }
+
+        function setColorScheme(scheme) {
+            currentScheme = scheme;
+            document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.color-btn.${scheme}`).classList.add('active');
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.mode-btn')[mode === 'disturbance' ? 0 : 1].classList.add('active');
+        }
+
+        function setBrushSize(size) {
+            brushSize = size;
+            document.querySelectorAll('.brush-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.closest('.brush-btn').classList.add('active');
+        }
+
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            document.getElementById('playPauseBtn').textContent = isPlaying ? '⏸️' : '▶️';
+        }
+
+        function setSpeed(value) {
+            simulationSpeed = parseInt(value);
+        }
+
+        function resetSimulation() {
+            clearBlobs();
+            initGrids();
+        }
+
+        function saveImage() {
+            const link = document.createElement('a');
+            link.download = `trippy-turing-${Date.now()}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        // ============ ANIMATION LOOP ============
+        let lastTime = performance.now();
+        let frameCount = 0;
+        let fps = 60;
+
+        function animate(currentTime) {
+            frameCount++;
+            if (currentTime - lastTime >= 1000) {
+                fps = frameCount;
+                document.getElementById('fpsDisplay').textContent = fps;
+                frameCount = 0;
+                lastTime = currentTime;
+            }
+
+            if (isPlaying) {
+                // Update persistent gel blobs
+                updatePersistentBlobs();
+
+                for (let i = 0; i < simulationSpeed; i++) {
+                    simulate();
+                }
+            }
+
+            render();
+            drawMandala();
+
+            requestAnimationFrame(animate);
+        }
+
+        // ============ INIT ============
+        initGrids();
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>
