@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Should I Text Them Back? 👑</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Fredoka+One&family=Righteous&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--pink:#FF1493;--magenta:#FF00FF;--accent:#C71585;
+--bg1:#0d0010;--bg2:#1a0030;--bg3:#2d0025;
+--yes:#FF1493;--no:#8B0057;
+--purple:#9B59B6;--gold:#FFD700;
+--glass:rgba(255,20,147,0.08);--glass-border:rgba(255,20,147,0.25);
+}
+body{
+font-family:'Fredoka One',cursive;
+background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3));
+color:#fff;min-height:100vh;overflow-x:hidden;
+animation:bgPulse 8s ease infinite alternate;
+}
+@keyframes bgPulse{0%{filter:brightness(1)}50%{filter:brightness(1.05)}100%{filter:brightness(0.97)}}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(255,20,147,0.05),transparent 60%);pointer-events:none;z-index:0}
+
+.float-emoji{position:fixed;font-size:1.5rem;opacity:0.15;pointer-events:none;z-index:0;animation:floatUp linear infinite}
+@keyframes floatUp{0%{transform:translateY(100vh) rotate(0deg);opacity:0}10%{opacity:0.15}90%{opacity:0.15}100%{transform:translateY(-10vh) rotate(360deg);opacity:0}}
+
+.container{max-width:1400px;margin:0 auto;padding:20px;position:relative;z-index:1}
+header{text-align:center;padding:30px 0 20px}
+header h1{font-family:'Righteous',cursive;font-size:clamp(2rem,5vw,3.5rem);background:linear-gradient(90deg,var(--pink),var(--magenta),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 20px rgba(255,20,147,0.5))}
+header p{font-family:'Fredoka One',cursive;font-size:1rem;color:rgba(255,255,255,0.6);margin-top:5px}
+
+.main-grid{display:grid;grid-template-columns:380px 1fr;gap:20px;margin-top:20px}
+@media(max-width:900px){.main-grid{grid-template-columns:1fr}}
+
+.panel{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:20px;backdrop-filter:blur(10px)}
+.panel h2{font-family:'Righteous',cursive;font-size:1.3rem;margin-bottom:15px;color:var(--pink);text-shadow:0 0 10px rgba(255,20,147,0.4)}
+
+.slider-group{margin-bottom:14px}
+.slider-label{display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;margin-bottom:4px}
+.slider-label .emoji{font-size:1.1rem}
+.slider-label .val{font-family:'Share Tech Mono',monospace;color:var(--pink);font-size:0.9rem;min-width:30px;text-align:right}
+.slider-desc{font-size:0.7rem;color:rgba(255,255,255,0.45);margin-bottom:4px;font-family:sans-serif}
+input[type=range]{width:100%;height:6px;-webkit-appearance:none;background:linear-gradient(90deg,var(--accent),var(--pink));border-radius:3px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--pink);box-shadow:0 0 10px var(--pink);cursor:pointer}
+.slider-ends{display:flex;justify-content:space-between;font-size:0.6rem;color:rgba(255,255,255,0.35);font-family:sans-serif}
+
+.bias-slider input[type=range]{background:linear-gradient(90deg,var(--accent),var(--gold),var(--pink))}
+.bias-slider input[type=range]::-webkit-slider-thumb{background:var(--gold);box-shadow:0 0 10px var(--gold)}
+
+.verdict-panel{text-align:center}
+.prob-bar-wrap{background:rgba(255,255,255,0.1);border-radius:10px;height:30px;overflow:hidden;margin:10px 0;position:relative}
+.prob-bar{height:100%;border-radius:10px;transition:width 0.3s ease,background 0.3s ease;display:flex;align-items:center;justify-content:flex-end;padding-right:10px;font-family:'Share Tech Mono',monospace;font-size:0.85rem}
+.verdict-text{font-size:1.4rem;margin:15px 0;min-height:60px;transition:opacity 0.3s}
+.prob-label{font-size:0.9rem;color:rgba(255,255,255,0.7);margin-bottom:5px}
+
+.math-display{background:rgba(0,0,0,0.3);border:1px solid rgba(255,20,147,0.15);border-radius:10px;padding:12px;font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:rgba(255,255,255,0.7);margin:10px 0;white-space:pre-wrap;line-height:1.6}
+
+canvas#boundary{width:100%;max-width:400px;height:300px;border-radius:10px;border:1px solid var(--glass-border);display:block;margin:10px auto;background:#0a000f}
+
+.sens-bar-row{display:flex;align-items:center;margin-bottom:6px;transition:transform 0.3s ease}
+.sens-label{width:120px;font-size:0.75rem;white-space:nowrap;flex-shrink:0}
+.sens-bar-container{flex:1;height:20px;position:relative;display:flex;align-items:center}
+.sens-center{position:absolute;left:50%;width:2px;height:100%;background:rgba(255,255,255,0.5);z-index:1}
+.sens-bar{height:16px;border-radius:4px;position:absolute;transition:width 0.25s ease,left 0.25s ease;min-width:2px}
+.sens-bar.positive{background:linear-gradient(90deg,var(--magenta),var(--pink))}
+.sens-bar.negative{background:linear-gradient(90deg,var(--no),#4B0082)}
+.sens-val{font-family:'Share Tech Mono',monospace;font-size:0.7rem;margin-left:5px;min-width:50px;flex-shrink:0}
+.sens-crown{color:var(--gold);font-size:0.7rem;margin-left:4px}
+.sens-commentary{font-size:0.85rem;margin-top:10px;padding:10px;background:rgba(0,0,0,0.2);border-radius:8px;text-align:center;font-style:italic;color:rgba(255,255,255,0.8)}
+.sens-bias-row{border-top:1px solid rgba(255,215,0,0.3);padding-top:8px;margin-top:8px}
+.sens-bias-row .sens-bar.positive{background:linear-gradient(90deg,#DAA520,var(--gold))}
+.sens-bias-row .sens-bar.negative{background:linear-gradient(90deg,#8B6914,#DAA520)}
+
+.chain-section{margin-top:20px}
+.chain-visual{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:15px 0}
+.neuron-box{border:2px solid;border-radius:12px;padding:15px 20px;text-align:center;min-width:180px}
+.neuron-box.n1{border-color:var(--pink);box-shadow:0 0 15px rgba(255,20,147,0.3)}
+.neuron-box.n2{border-color:var(--purple);box-shadow:0 0 15px rgba(155,89,182,0.3)}
+.chain-arrow{font-size:1.5rem;animation:pulseArrow 1.5s ease infinite;color:var(--pink)}
+@keyframes pulseArrow{0%,100%{opacity:0.5;transform:scale(1)}50%{opacity:1;transform:scale(1.15)}}
+.n2-panel{border-color:var(--purple)!important}
+.n2-panel h2{color:var(--purple)!important;text-shadow:0 0 10px rgba(155,89,182,0.4)!important}
+.n2-panel input[type=range]{background:linear-gradient(90deg,#6C3483,var(--purple))!important}
+.n2-panel input[type=range]::-webkit-slider-thumb{background:var(--purple)!important;box-shadow:0 0 10px var(--purple)!important}
+.n2-panel .prob-bar{background:linear-gradient(90deg,#6C3483,var(--purple))!important}
+
+.train-section{margin-top:20px}
+.btn{font-family:'Fredoka One',cursive;border:none;border-radius:10px;padding:10px 18px;cursor:pointer;font-size:0.85rem;transition:transform 0.15s,box-shadow 0.15s;margin:4px}
+.btn:hover{transform:scale(1.05)}
+.btn:active{transform:scale(0.97)}
+.btn-pink{background:linear-gradient(135deg,var(--pink),var(--magenta));color:#fff;box-shadow:0 0 15px rgba(255,20,147,0.4)}
+.btn-dark{background:linear-gradient(135deg,#2d0025,#1a0030);color:#fff;border:1px solid var(--no);box-shadow:0 0 10px rgba(139,0,87,0.3)}
+.btn-gold{background:linear-gradient(135deg,#DAA520,var(--gold));color:#000}
+.btn-reset{background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2)}
+.train-info{font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:rgba(255,255,255,0.7);margin-top:10px}
+.train-narrative{font-size:0.85rem;margin-top:8px;color:var(--pink);font-style:italic}
+
+.confetti{position:fixed;pointer-events:none;z-index:999}
+.confetti-piece{position:absolute;width:8px;height:8px;border-radius:2px;animation:confettiFall 1.5s ease forwards}
+@keyframes confettiFall{0%{opacity:1;transform:translateY(0) rotate(0deg) scale(1)}100%{opacity:0;transform:translateY(300px) rotate(720deg) scale(0.3)}}
+
+.easter-egg-overlay{position:fixed;inset:0;background:rgba(255,0,0,0.15);pointer-events:none;z-index:998;animation:flashRed 0.5s ease infinite alternate;display:none}
+@keyframes flashRed{0%{background:rgba(255,0,0,0.1)}100%{background:rgba(255,0,0,0.25)}}
+
+footer{text-align:center;padding:30px;font-size:0.8rem;color:rgba(255,255,255,0.4);margin-top:30px}
+
+@keyframes phoneShake{0%,100%{transform:translateX(0)}10%,30%,50%,70%,90%{transform:translateX(-4px)}20%,40%,60%,80%{transform:translateX(4px)}}
+.shake{animation:phoneShake 0.5s ease}
+</style>
+</head>
+<body>
+
+<div class="easter-egg-overlay" id="easterOverlay"></div>
+
+<div class="container">
+<header>
+<h1>📱 Should I Text Them Back? 👑</h1>
+<p>A scientifically unhinged decision neuron for the romantically selective</p>
+</header>
+
+<div class="main-grid">
+<!-- LEFT: Inputs -->
+<div class="panel" id="inputPanel">
+<h2>⚖️ The Evidence</h2>
+
+<div class="slider-group">
+<div class="slider-label"><span><span class="emoji">💕</span> Genuine Feels</span><span class="val" id="v1">5</span></div>
+<div class="slider-desc">Be honest with yourself, bestie.</div>
+<input type="range" min="0" max="10" value="5" id="s1" oninput="update()">
+<div class="slider-ends"><span>Who are they again?</span><span>I doodle their name</span></div>
+</div>
+
+<div class="slider-group">
+<div class="slider-label"><span><span class="emoji">😐</span> The "K" Factor</span><span class="val" id="v2">2</span></div>
+<div class="slider-desc">One letter. One letter is all they gave you.</div>
+<input type="range" min="0" max="10" value="2" id="s2" oninput="update()">
+<div class="slider-ends"><span>Full paragraphs</span><span>Just. The letter. K.</span></div>
+</div>
+
+<div class="slider-group">
+<div class="slider-label"><span><span class="emoji">🚩</span> Red Flag Parade</span><span class="val" id="v3">3</span></div>
+<div class="slider-desc">We love to ignore these. The neuron does not.</div>
+<input type="range" min="0" max="10" value="3" id="s3" oninput="update()">
+<div class="slider-ends"><span>Green flags everywhere 🟢</span><span>It's giving danger 🚩🚩🚩</span></div>
+</div>
+
+<div class="slider-group">
+<div class="slider-label"><span><span class="emoji">💀</span> Dry Texter Energy</span><span class="val" id="v4">3</span></div>
+<div class="slider-desc">Effort is a love language. Are they fluent?</div>
+<input type="range" min="0" max="10" value="3" id="s4" oninput="update()">
+<div class="slider-ends"><span>Chaotic fun</span><span>Replies 'lol' to everything</span></div>
+</div>
+
+<div class="slider-group">
+<div class="slider-label"><span><span class="emoji">😂</span> Funny or Nah?</span><span class="val" id="v5">5</span></div>
+<div class="slider-desc">Humor can cover a multitude of sins. Temporarily.</div>
+<input type="range" min="0" max="10" value="5" id="s5" oninput="update()">
+<div class="slider-ends"><span>Zero comedic value</span><span>Cry-laugh every time</span></div>
+</div>
+
+<div class="slider-group">
+<div class="slider-label"><span><span class="emoji">👀</span> Ex Alert</span><span class="val" id="v6">0</span></div>
+<div class="slider-desc">The neuron has a long memory. And so should you.</div>
+<input type="range" min="0" max="10" value="0" id="s6" oninput="update()">
+<div class="slider-ends"><span>Never met before</span><span>Oh it's THEM</span></div>
+</div>
+
+<div class="slider-group">
+<div class="slider-label"><span><span class="emoji">👶</span> Baby Genetics</span><span class="val" id="v7">5</span></div>
+<div class="slider-desc">Completely unscientific. Absolutely valid input.</div>
+<input type="range" min="0" max="10" value="5" id="s7" oninput="update()">
+<div class="slider-ends"><span>The genetics... concerning</span><span>Stunning offspring potential</span></div>
+</div>
+
+<div class="slider-group">
+<div class="slider-label"><span><span class="emoji">😳</span> Hot or Desperate?</span><span class="val" id="v8">5</span></div>
+<div class="slider-desc">The neuron sees through the lies you tell yourself.</div>
+<input type="range" min="0" max="10" value="5" id="s8" oninput="update()">
+<div class="slider-ends"><span>Peak desperation</span><span>Objectively stunning</span></div>
+</div>
+
+<div class="slider-group bias-slider">
+<div class="slider-label"><span><span class="emoji">👑</span> Main Character Energy</span><span class="val" id="vb">-1.0</span></div>
+<div class="slider-desc">Your default setting before any facts are considered.</div>
+<input type="range" min="-50" max="50" value="-10" id="sb" oninput="update()">
+<div class="slider-ends"><span>I reply to NO ONE</span><span>Everyone gets a reply</span></div>
+</div>
+</div>
+
+<!-- RIGHT: Outputs -->
+<div>
+<div class="panel verdict-panel" id="verdictPanel">
+<h2>🧠 The Neuron's Verdict</h2>
+<div class="prob-label" id="probLabel">⚖️ The neuron is on the fence</div>
+<div class="prob-bar-wrap"><div class="prob-bar" id="probBar" style="width:50%">50%</div></div>
+<div class="verdict-text" id="verdictText">Loading the drama...</div>
+<div class="math-display" id="mathDisplay"></div>
+</div>
+
+<div class="panel" style="margin-top:15px">
+<h2>📐 The Drama Visualized</h2>
+<canvas id="boundary" width="400" height="300"></canvas>
+<div style="text-align:center;font-size:0.75rem;color:rgba(255,255,255,0.5)">X: Genuine Feels 💕 &nbsp; Y: Hot or Desperate? 😳</div>
+</div>
+
+<div class="panel" style="margin-top:15px">
+<h2>🔍 Sensitivity Analysis — The Receipts</h2>
+<p style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-bottom:12px;font-family:sans-serif">Every input. Every weight. No secrets. The neuron sees all.</p>
+<div id="sensChart"></div>
+<div class="sens-commentary" id="sensCommentary"></div>
+</div>
+</div>
+</div>
+
+<!-- Two-Neuron Chain -->
+<div class="panel chain-section" style="margin-top:20px">
+<h2>🔗 Two-Neuron Chain — It Gets Worse</h2>
+<p style="font-size:0.8rem;color:rgba(255,255,255,0.55);margin-bottom:10px">Neuron 1 decides if you should text. Neuron 2 decides if you should make it weird.</p>
+
+<div class="chain-visual">
+<div class="neuron-box n1">
+<div style="font-size:0.8rem;margin-bottom:5px">NEURON 1</div>
+<div style="font-size:0.75rem;color:rgba(255,255,255,0.6)">"Text Them?"</div>
+<div style="font-size:1.3rem;margin-top:5px" id="n1display">σ(z₁) = 50%</div>
+</div>
+<div class="chain-arrow" id="chainArrow">━━ <span id="chainVal">0.50</span> ━━▶</div>
+<div class="neuron-box n2">
+<div style="font-size:0.8rem;margin-bottom:5px">NEURON 2</div>
+<div style="font-size:0.75rem;color:rgba(255,255,255,0.6)">"Send Unhinged?"</div>
+<div style="font-size:1.3rem;margin-top:5px" id="n2display">σ(z₂) = 50%</div>
+</div>
+</div>
+
+<div class="main-grid" style="margin-top:15px">
+<div class="panel n2-panel">
+<h2>🤪 Chaos Neuron Inputs</h2>
+<div class="slider-group">
+<div class="slider-label"><span><span class="emoji">🧠</span> Neuron 1 Output</span><span class="val" id="n2v1">0.50</span></div>
+<div class="slider-desc">Automatically fed from Neuron 1</div>
+<input type="range" min="0" max="100" value="50" id="n2s1" disabled style="opacity:0.5">
+</div>
+<div class="slider-group">
+<div class="slider-label"><span><span class="emoji">🌙</span> Past midnight?</span><span class="val" id="n2v2">3</span></div>
+<div class="slider-desc">Late night decisions hit different.</div>
+<input type="range" min="0" max="10" value="3" id="n2s2" oninput="update()">
+<div class="slider-ends"><span>Broad daylight</span><span>3 AM thoughts</span></div>
+</div>
+<div class="slider-group">
+<div class="slider-label"><span><span class="emoji">🍷</span> Emotional state</span><span class="val" id="n2v3">2</span></div>
+<div class="slider-desc">0 = fine, 10 = absolutely not fine</div>
+<input type="range" min="0" max="10" value="2" id="n2s3" oninput="update()">
+<div class="slider-ends"><span>Emotionally stable</span><span>In my feels</span></div>
+</div>
+<div class="slider-group">
+<div class="slider-label"><span><span class="emoji">👯</span> Bestie co-signed?</span><span class="val" id="n2v4">5</span></div>
+<div class="slider-desc">The group chat has opinions.</div>
+<input type="range" min="0" max="10" value="5" id="n2s4" oninput="update()">
+<div class="slider-ends"><span>They said DON'T</span><span>Full approval</span></div>
+</div>
+<div class="slider-group">
+<div class="slider-label"><span><span class="emoji">⏰</span> Days since they texted first</span><span class="val" id="n2v5">1</span></div>
+<div class="slider-desc">Effort is a two-way street.</div>
+<input type="range" min="0" max="10" value="1" id="n2s5" oninput="update()">
+<div class="slider-ends"><span>They just texted</span><span>It's been 84 years</span></div>
+</div>
+<div class="slider-group bias-slider">
+<div class="slider-label"><span><span class="emoji">🤪</span> Chaotic Energy</span><span class="val" id="n2vb">0.5</span></div>
+<input type="range" min="-50" max="50" value="5" id="n2sb" oninput="update()">
+<div class="slider-ends"><span>Very rational</span><span>Pure chaos</span></div>
+</div>
+</div>
+<div class="panel n2-panel verdict-panel">
+<h2>🤪 The Chaos Verdict</h2>
+<div class="prob-label" id="n2probLabel">...</div>
+<div class="prob-bar-wrap"><div class="prob-bar" id="n2probBar" style="width:50%">50%</div></div>
+<div class="verdict-text" id="n2verdictText">...</div>
+<div class="math-display" id="n2mathDisplay"></div>
+</div>
+</div>
+</div>
+
+<!-- Training -->
+<div class="panel train-section" style="margin-top:20px">
+<h2>📚 Teach the Neuron Your Ways</h2>
+<div style="margin-bottom:10px">
+<button class="btn btn-pink" onclick="addExample(1)">💕 Add "Text Back" Example</button>
+<button class="btn btn-dark" onclick="addExample(0)">💀 Add "Leave on Read" Example</button>
+<button class="btn btn-gold" onclick="trainStep()">Take One Step 👟</button>
+<button class="btn btn-pink" onclick="trainMulti()">Train, Bestie! 🏃‍♀️</button>
+<button class="btn btn-reset" onclick="resetTraining()">Reset the Drama 🔄</button>
+</div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+<span style="font-size:0.8rem">🐌</span>
+<input type="range" min="50" max="500" value="200" id="speedSlider" style="flex:1">
+<span style="font-size:0.8rem">🚀</span>
+</div>
+<div class="train-info" id="trainInfo">Lesson #0 | Accuracy: —% | Examples: 0</div>
+<div class="train-narrative" id="trainNarrative">Waiting for data... the neuron is hungry for drama.</div>
+</div>
+
+</div>
+
+<footer>Built with pink energy and mathematical chaos. Two neurons. Zero chill. No actual relationship advice was provided. 💕☮️</footer>
+
+<script>
+// ============ NEURON 1 WEIGHTS ============
+var weights = [2.5, -3.0, -2.8, -1.8, 1.5, -3.5, 1.2, 2.0];
+var currentBias = -1.0;
+var inputNames = ['💕 Genuine Feels','😐 K Factor','🚩 Red Flags','💀 Dry Texter','😂 Funny','👀 Ex Alert','👶 Baby Genetics','😳 Hot/Desperate'];
+var sensComments = [
+  '💕 Your heart is in charge. Brave. Or unhinged. Same thing.',
+  '💀 One letter. One letter is destroying your probability.',
+  '🚩 The flags have taken over. We tried to warn you.',
+  '💀 The \'lol\' replies have consequences. Here they are.',
+  '😂 Comedy is carrying this entire relationship. No notes.',
+  '👀 The ex is running the show. Shocking. Truly.',
+  '👶 Baby genetics is a top factor. The neuron respects the vision.',
+  '😳 The neuron has clocked your desperation levels.'
+];
+
+// ============ NEURON 2 WEIGHTS (fixed) ============
+var w2 = [3.0, 2.5, 2.0, 1.5, 1.8];
+var bias2 = 0.5;
+
+// ============ TRAINING DATA ============
+var examples = [];
+var stepCount = 0;
+var lr = 0.1;
+
+// ============ SIGMOID ============
+function sigmoid(z) { return 1 / (1 + Math.exp(-Math.max(-500, Math.min(500, z)))); }
+
+// ============ GET INPUTS ============
+function getInputs() {
+  var vals = [];
+  for (var i = 1; i <= 8; i++) vals.push(Number(document.getElementById('s'+i).value));
+  return vals;
+}
+
+function getNorm(vals) {
+  var n = [];
+  for (var i = 0; i < 8; i++) {
+    if (i === 7) {
+      n.push((vals[7] - 5) / 5);
+    } else {
+      n.push(vals[i] / 10);
+    }
+  }
+  return n;
+}
+
+function readBias() { return Number(document.getElementById('sb').value) / 10; }
+
+function getN2Inputs(n1prob) {
+  return [
+    n1prob,
+    Number(document.getElementById('n2s2').value) / 10,
+    Number(document.getElementById('n2s3').value) / 10,
+    Number(document.getElementById('n2s4').value) / 10,
+    Number(document.getElementById('n2s5').value) / 10
+  ];
+}
+
+function readN2Bias() { return Number(document.getElementById('n2sb').value) / 10; }
+
+// ============ COMPUTE ============
+function computeN1(norm, b) {
+  var z = b;
+  for (var i = 0; i < 8; i++) z += weights[i] * norm[i];
+  return { z: z, prob: sigmoid(z) };
+}
+
+function computeN2(n2inputs, b2) {
+  var z = b2;
+  for (var i = 0; i < 5; i++) z += w2[i] * n2inputs[i];
+  return { z: z, prob: sigmoid(z) };
+}
+
+// ============ VERDICT MESSAGES ============
+function n1Verdict(p) {
+  var pct = p * 100;
+  if (pct > 85) return '\u{1F338} Bestie, what are you waiting for?! PUT THOSE THUMBS TO WORK!';
+  if (pct > 70) return '\u{1F451} Fine. Grace them with your presence.';
+  if (pct > 60) return '\u2728 The red flags are manageable. You may proceed.';
+  if (pct > 50) return '\u{1F495} Cute babies AND good vibes? TEXT THEM IMMEDIATELY!';
+  if (pct > 40) return '\u{1F624} That\'s the desperation talking. Log off.';
+  if (pct > 30) return '\u{1F6A9} Baby, that\'s a RED FLAG PARADE. Put. The. Phone. Down.';
+  if (pct > 10) return '\u{1F480} They sent \'k\'. They do not deserve you.';
+  return '\u{1F440} Are they your EX?! Close the app. Delete the contact. Burn the phone.';
+}
+
+function n1ProbLabel(p) {
+  var pct = p * 100;
+  if (pct <= 20) return '\u{1F480} Absolutely Not';
+  if (pct <= 40) return '\u{1F6A9} The flags are screaming no';
+  if (pct < 50) return '\u{1F62C} It\'s giving... maybe not';
+  if (Math.round(pct) === 50) return '\u2696\uFE0F The neuron is on the fence';
+  if (pct <= 70) return '\u{1F440} Hmm... the math is mathing';
+  if (pct <= 85) return '\u{1F495} You should probably text back';
+  return '\u2728 TEXT THEM RIGHT NOW BESTIE';
+}
+
+function n2Verdict(p) {
+  var pct = p * 100;
+  if (pct > 90) return '\u{1F6A8} BOTH NEURONS SAY YES. THIS IS EITHER GENIUS OR CHAOS. SAME THING.';
+  if (pct > 80) return '\u{1F377} Your emotional state + the math = send it bestie.';
+  if (pct > 65) return '\u{1F319} It\'s late. You\'re in your feelings. The neurons have aligned.';
+  if (pct > 50) return '\u{1F92A} The math says go for it. The neuron is not responsible for outcomes.';
+  if (pct > 35) return '\u{1F60C} The chaos neuron says no. Put the phone down. Drink water.';
+  if (pct > 20) return '\u{1F9D8} It is not yet your time. The neurons are protecting you.';
+  return '\u{1F485} Absolutely not. Your bestie would not co-sign this. Neither does the neuron.';
+}
+
+// ============ EASTER EGG ============
+var easterActive = false;
+function checkEaster(vals) {
+  if (vals[5] === 10 && vals[2] === 10) {
+    if (!easterActive) {
+      easterActive = true;
+      document.getElementById('easterOverlay').style.display = 'block';
+    }
+    return true;
+  }
+  if (easterActive) {
+    easterActive = false;
+    document.getElementById('easterOverlay').style.display = 'none';
+  }
+  return false;
+}
+
+// ============ CONFETTI ============
+function spawnConfetti() {
+  var c = document.createElement('div');
+  c.className = 'confetti';
+  var vp = document.getElementById('verdictPanel');
+  var rect = vp.getBoundingClientRect();
+  c.style.left = (rect.left + rect.width / 2) + 'px';
+  c.style.top = rect.top + 'px';
+  var colors = ['#FF1493','#FF00FF','#FFD700','#FF69B4','#C71585','#9B59B6'];
+  for (var i = 0; i < 30; i++) {
+    var p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    p.style.left = ((Math.random() - 0.5) * 200) + 'px';
+    p.style.animationDuration = (1 + Math.random()) + 's';
+    p.style.animationDelay = (Math.random() * 0.3) + 's';
+    c.appendChild(p);
+  }
+  document.body.appendChild(c);
+  setTimeout(function() { c.remove(); }, 2500);
+}
+
+// ============ SENSITIVITY CHART ============
+function renderSensitivity(norm, b) {
+  var contributions = [];
+  for (var i = 0; i < 8; i++) {
+    contributions.push({ idx: i, name: inputNames[i], val: weights[i] * norm[i] });
+  }
+  contributions.sort(function(a, b) { return Math.abs(b.val) - Math.abs(a.val); });
+  var maxAbs = 0.1;
+  for (var i = 0; i < contributions.length; i++) {
+    if (Math.abs(contributions[i].val) > maxAbs) maxAbs = Math.abs(contributions[i].val);
+  }
+  if (Math.abs(b) > maxAbs) maxAbs = Math.abs(b);
+  var topIdx = contributions[0].idx;
+
+  var html = '';
+  for (var ci = 0; ci < contributions.length; ci++) {
+    var c = contributions[ci];
+    var pct = (Math.abs(c.val) / maxAbs) * 45;
+    var isPos = c.val >= 0;
+    var barStyle = isPos
+      ? 'left:50%;width:' + pct + '%'
+      : 'left:' + (50 - pct) + '%;width:' + pct + '%';
+    var crown = ci === 0 ? ' <span class="sens-crown">\u{1F451}</span>' : '';
+    var sign = c.val >= 0 ? '+' : '';
+    html += '<div class="sens-bar-row"><span class="sens-label">' + c.name + '</span>'
+      + '<div class="sens-bar-container"><div class="sens-center"></div>'
+      + '<div class="sens-bar ' + (isPos ? 'positive' : 'negative') + '" style="' + barStyle + '"></div></div>'
+      + '<span class="sens-val">' + sign + c.val.toFixed(2) + crown + '</span></div>';
+  }
+  // Bias row
+  var bPct = (Math.abs(b) / maxAbs) * 45;
+  var bPos = b >= 0;
+  var bStyle = bPos ? 'left:50%;width:' + bPct + '%' : 'left:' + (50 - bPct) + '%;width:' + bPct + '%';
+  var bSign = b >= 0 ? '+' : '';
+  html += '<div class="sens-bar-row sens-bias-row"><span class="sens-label">\u{1F451} MC Energy</span>'
+    + '<div class="sens-bar-container"><div class="sens-center"></div>'
+    + '<div class="sens-bar ' + (bPos ? 'positive' : 'negative') + '" style="' + bStyle + '"></div></div>'
+    + '<span class="sens-val" style="color:var(--gold)">' + bSign + b.toFixed(2) + '</span></div>';
+
+  document.getElementById('sensChart').innerHTML = html;
+  document.getElementById('sensCommentary').textContent = sensComments[topIdx] || '';
+}
+
+// ============ DECISION BOUNDARY ============
+function drawBoundary(vals, currentB) {
+  var canvas = document.getElementById('boundary');
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width;
+  var H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  // Draw YES / NO regions using simplified gradient fills
+  // Compute boundary line: solve for x8 given x1
+  // z = w[0]*x1/10 + w[7]*(x8-5)/5 + sum_others + b = 0
+  var sumOthersBase = currentB;
+  for (var i = 1; i < 7; i++) sumOthersBase += weights[i] * vals[i] / 10;
+
+  // Fill YES region (above line) and NO region (below line)
+  // Draw the regions by filling above/below the decision line
+  ctx.fillStyle = 'rgba(255, 20, 147, 0.12)';
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  for (var px = 0; px <= W; px++) {
+    var x1 = (px / W) * 10;
+    var sumO = sumOthersBase + weights[0] * x1 / 10;
+    var x8 = (-sumO * 5 / weights[7]) + 5;
+    var py = (1 - x8 / 10) * H;
+    py = Math.max(0, Math.min(H, py));
+    ctx.lineTo(px, py);
+  }
+  ctx.lineTo(W, 0);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = 'rgba(75, 0, 130, 0.15)';
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  for (var px = 0; px <= W; px++) {
+    var x1 = (px / W) * 10;
+    var sumO = sumOthersBase + weights[0] * x1 / 10;
+    var x8 = (-sumO * 5 / weights[7]) + 5;
+    var py = (1 - x8 / 10) * H;
+    py = Math.max(0, Math.min(H, py));
+    ctx.lineTo(px, py);
+  }
+  ctx.lineTo(W, H);
+  ctx.closePath();
+  ctx.fill();
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,20,147,0.15)';
+  ctx.lineWidth = 0.5;
+  for (var i = 0; i <= 10; i++) {
+    ctx.beginPath(); ctx.moveTo(i * W / 10, 0); ctx.lineTo(i * W / 10, H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, i * H / 10); ctx.lineTo(W, i * H / 10); ctx.stroke();
+  }
+
+  // Axis labels
+  ctx.fillStyle = 'rgba(255,255,255,0.25)';
+  ctx.font = '10px Share Tech Mono, monospace';
+  for (var i = 0; i <= 10; i += 2) {
+    ctx.fillText(i.toString(), i * W / 10 + 2, H - 4);
+    ctx.fillText(i.toString(), 2, (1 - i / 10) * H - 2);
+  }
+
+  // Decision boundary line
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+  ctx.lineWidth = 2.5;
+  ctx.shadowColor = '#FFD700';
+  ctx.shadowBlur = 10;
+  ctx.beginPath();
+  var started = false;
+  for (var px = 0; px <= W; px++) {
+    var x1 = (px / W) * 10;
+    var sumO = sumOthersBase + weights[0] * x1 / 10;
+    var x8 = (-sumO * 5 / weights[7]) + 5;
+    var py = (1 - x8 / 10) * H;
+    if (py >= -20 && py <= H + 20) {
+      if (!started) { ctx.moveTo(px, py); started = true; }
+      else ctx.lineTo(px, py);
+    }
+  }
+  ctx.stroke();
+  ctx.restore();
+
+  // Training points
+  for (var ei = 0; ei < examples.length; ei++) {
+    var ex = examples[ei];
+    var epx = (ex.inputs[0] / 10) * W;
+    var epy = (1 - ex.inputs[7] / 10) * H;
+    ctx.fillStyle = ex.label === 1 ? '#FF1493' : '#4B0082';
+    ctx.beginPath();
+    ctx.arc(epx, epy, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.font = '11px sans-serif';
+    ctx.fillText(ex.label === 1 ? '\u{1F495}' : '\u{1F480}', epx - 6, epy - 9);
+  }
+
+  // Current point (pulsing)
+  var cpx = (vals[0] / 10) * W;
+  var cpy = (1 - vals[7] / 10) * H;
+  var pulse = (Math.sin(Date.now() / 400) + 1) / 2;
+  ctx.fillStyle = 'rgba(255,20,147,' + (0.6 + pulse * 0.4) + ')';
+  ctx.beginPath();
+  ctx.arc(cpx, cpy, 7 + pulse * 3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Region labels
+  ctx.font = 'bold 13px sans-serif';
+  ctx.fillStyle = 'rgba(255,20,147,0.7)';
+  ctx.fillText('TEXT BACK \u{1F495}', W - 115, 22);
+  ctx.fillStyle = 'rgba(150,100,200,0.7)';
+  ctx.fillText('LEAVE ON READ \u{1F485}', 5, H - 8);
+}
+
+// ============ MAIN UPDATE ============
+var lastVerdict = '';
+var lastWasYes = false;
+
+function update() {
+  var vals = getInputs();
+  var b = readBias();
+  var norm = getNorm(vals);
+  var result = computeN1(norm, b);
+  var z1 = result.z;
+  var p1 = result.prob;
+
+  // Update current bias for training sync
+  currentBias = b;
+
+  // Update value displays
+  for (var i = 1; i <= 8; i++) document.getElementById('v' + i).textContent = vals[i - 1];
+  document.getElementById('vb').textContent = b.toFixed(1);
+
+  // Easter egg check
+  var isEaster = checkEaster(vals);
+
+  // Probability bar
+  var pct = Math.round(p1 * 100);
+  var bar = document.getElementById('probBar');
+  bar.style.width = pct + '%';
+  bar.textContent = pct + '%';
+  bar.style.background = p1 > 0.5
+    ? 'linear-gradient(90deg, #C71585, #FF1493)'
+    : 'linear-gradient(90deg, #4B0082, #8B0057)';
+
+  document.getElementById('probLabel').textContent = n1ProbLabel(p1);
+
+  // Verdict
+  var vt;
+  if (isEaster) {
+    vt = '\u{1F6A8}\u{1F6A8}\u{1F6A8} CLOSE THE APP. DELETE THE CONTACT. THROW THE WHOLE PERSON AWAY. THE NEURON REFUSES TO COMPUTE. \u{1F6A8}\u{1F6A8}\u{1F6A8}';
+  } else {
+    vt = n1Verdict(p1);
+  }
+
+  var vEl = document.getElementById('verdictText');
+  if (vt !== lastVerdict) {
+    var isYes = p1 > 0.5 && !isEaster;
+    lastVerdict = vt;
+    vEl.style.opacity = '0';
+    setTimeout(function() {
+      vEl.textContent = vt;
+      vEl.style.opacity = '1';
+    }, 150);
+    if (isYes && !lastWasYes) spawnConfetti();
+    if (!isYes) {
+      document.getElementById('verdictPanel').classList.add('shake');
+      setTimeout(function() { document.getElementById('verdictPanel').classList.remove('shake'); }, 600);
+    }
+    lastWasYes = isYes;
+  }
+
+  // Math display
+  var mathLines = 'z\u2081 = ';
+  var terms = [];
+  for (var i = 0; i < 8; i++) terms.push('(' + weights[i].toFixed(1) + ' \u00D7 ' + norm[i].toFixed(2) + ')');
+  mathLines += terms.join(' + ');
+  mathLines += ' + ' + b.toFixed(1);
+  mathLines += '\nz\u2081 = ' + z1.toFixed(3);
+  mathLines += '\n\u03C3(z\u2081) = ' + (p1 * 100).toFixed(1) + '%';
+  document.getElementById('mathDisplay').textContent = mathLines;
+
+  // Sensitivity
+  renderSensitivity(norm, b);
+
+  // Decision boundary
+  drawBoundary(vals, b);
+
+  // ---- Neuron 2 ----
+  var n2inputs = getN2Inputs(p1);
+  var b2 = readN2Bias();
+  var r2 = computeN2(n2inputs, b2);
+  var z2 = r2.z;
+  var p2 = r2.prob;
+
+  document.getElementById('n1display').textContent = '\u03C3(z\u2081) = ' + pct + '%';
+  document.getElementById('chainVal').textContent = p1.toFixed(2);
+  document.getElementById('n2display').textContent = '\u03C3(z\u2082) = ' + Math.round(p2 * 100) + '%';
+
+  // N2 slider display
+  document.getElementById('n2s1').value = Math.round(p1 * 100);
+  document.getElementById('n2v1').textContent = p1.toFixed(2);
+  document.getElementById('n2v2').textContent = document.getElementById('n2s2').value;
+  document.getElementById('n2v3').textContent = document.getElementById('n2s3').value;
+  document.getElementById('n2v4').textContent = document.getElementById('n2s4').value;
+  document.getElementById('n2v5').textContent = document.getElementById('n2s5').value;
+  document.getElementById('n2vb').textContent = b2.toFixed(1);
+
+  // N2 prob bar
+  var n2pct = Math.round(p2 * 100);
+  var n2bar = document.getElementById('n2probBar');
+  n2bar.style.width = n2pct + '%';
+  n2bar.textContent = n2pct + '%';
+  n2bar.style.background = p2 > 0.5
+    ? 'linear-gradient(90deg, #6C3483, #9B59B6)'
+    : 'linear-gradient(90deg, #2C0045, #4B0082)';
+
+  // N2 verdict
+  var n2vt;
+  if (isEaster) {
+    n2vt = '\u{1F6A8} THE CHAOS NEURON AGREES. DO NOT TEXT. DO NOT THINK. JUST LEAVE. \u{1F6A8}';
+  } else {
+    n2vt = n2Verdict(p2);
+  }
+  document.getElementById('n2verdictText').textContent = n2vt;
+  document.getElementById('n2probLabel').textContent = p2 > 0.5 ? '\u{1F92A} Chaos approved' : '\u{1F60C} Chaos denied';
+
+  // N2 math
+  var n2math = 'z\u2082 = ';
+  var n2terms = [];
+  for (var i = 0; i < 5; i++) n2terms.push('(' + w2[i].toFixed(1) + ' \u00D7 ' + n2inputs[i].toFixed(2) + ')');
+  n2math += n2terms.join(' + ') + ' + ' + b2.toFixed(1);
+  n2math += '\nz\u2082 = ' + z2.toFixed(3);
+  n2math += '\n\u03C3(z\u2082) = ' + (p2 * 100).toFixed(1) + '%';
+  document.getElementById('n2mathDisplay').textContent = n2math;
+}
+
+// ============ TRAINING ============
+function addExample(label) {
+  var vals = getInputs();
+  examples.push({ inputs: vals.slice(), norm: getNorm(vals), label: label });
+  updateTrainInfo();
+}
+
+function trainStep() {
+  if (examples.length === 0) return;
+  stepCount++;
+  var ex = examples[Math.floor(Math.random() * examples.length)];
+  var norm = ex.norm;
+  var b = readBias();
+  var result = computeN1(norm, b);
+  var err = ex.label - result.prob;
+  for (var i = 0; i < 8; i++) weights[i] += lr * err * norm[i];
+  currentBias += lr * err;
+  document.getElementById('sb').value = Math.round(currentBias * 10);
+  updateTrainInfo();
+  update();
+}
+
+function trainMulti() {
+  var speed = 550 - Number(document.getElementById('speedSlider').value);
+  var steps = 0;
+  var interval = setInterval(function() {
+    trainStep();
+    steps++;
+    if (steps >= 10) clearInterval(interval);
+  }, speed);
+}
+
+function resetTraining() {
+  examples = [];
+  stepCount = 0;
+  weights = [2.5, -3.0, -2.8, -1.8, 1.5, -3.5, 1.2, 2.0];
+  currentBias = -1.0;
+  document.getElementById('sb').value = -10;
+  updateTrainInfo();
+  update();
+}
+
+function updateTrainInfo() {
+  var acc = '\u2014';
+  if (examples.length > 0) {
+    var correct = 0;
+    for (var i = 0; i < examples.length; i++) {
+      var ex = examples[i];
+      var result = computeN1(ex.norm, readBias());
+      if ((result.prob > 0.5 && ex.label === 1) || (result.prob <= 0.5 && ex.label === 0)) correct++;
+    }
+    acc = Math.round(correct / examples.length * 100);
+  }
+  document.getElementById('trainInfo').textContent = 'Lesson #' + stepCount + ' | Accuracy: ' + acc + '% | Examples: ' + examples.length;
+  var narrative = 'Waiting for data... the neuron is hungry for drama.';
+  if (stepCount >= 30) narrative = '\u{1F451} The neuron has seen enough. It has learned.';
+  else if (stepCount >= 16) narrative = '\u{1F485} The neuron is developing opinions.';
+  else if (stepCount >= 6) narrative = '\u{1F9E0} Processing the red flags... there are many.';
+  else if (stepCount >= 1) narrative = '\u{1F4DA} The neuron is studying your romantic history...';
+  document.getElementById('trainNarrative').textContent = narrative;
+}
+
+// ============ FLOATING EMOJIS ============
+function spawnFloatingEmoji() {
+  var emojis = ['\u{1F495}','\u{1F6A9}','\u{1F440}','\u{1F480}','\u{1F602}','\u{1F4F1}','\u{1F476}','\u{1F92A}','\u{1F451}','\u2728'];
+  var el = document.createElement('div');
+  el.className = 'float-emoji';
+  el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+  el.style.left = (Math.random() * 100) + 'vw';
+  el.style.animationDuration = (8 + Math.random() * 12) + 's';
+  el.style.animationDelay = (Math.random() * 2) + 's';
+  document.body.appendChild(el);
+  setTimeout(function() { el.remove(); }, 22000);
+}
+setInterval(spawnFloatingEmoji, 2500);
+for (var k = 0; k < 4; k++) setTimeout(spawnFloatingEmoji, k * 500);
+
+// Animate the pulsing current point on the boundary
+var pulseAnimId;
+function animatePulse() {
+  var vals = getInputs();
+  drawBoundary(vals, readBias());
+  pulseAnimId = requestAnimationFrame(animatePulse);
+}
+
+// Init
+update();
+animatePulse();
+</script>
+</body>
+</html>
