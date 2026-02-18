@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RGB Color Studio — Spec</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 2rem;
+      background: #0a0a0f;
+      color: #d0d0e0;
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      max-width: 860px;
+      margin-inline: auto;
+      line-height: 1.7;
+    }
+    a.back {
+      display: inline-block;
+      margin-bottom: 2rem;
+      color: #c4b0ff;
+      text-decoration: none;
+      font-size: 0.9rem;
+      border: 1px solid #7c5cfc;
+      padding: 0.3em 0.9em;
+      border-radius: 999px;
+      box-shadow: 0 0 8px #7c5cfc55;
+      transition: background 0.2s;
+    }
+    a.back:hover { background: #7c5cfc22; }
+    h1 { color: #fff; font-size: 1.8rem; margin-top: 0; }
+    h2 { color: #c4b0ff; font-size: 1.2rem; border-bottom: 1px solid #2a2a3a; padding-bottom: 0.3em; margin-top: 2rem; }
+    h3 { color: #a090e0; font-size: 1rem; }
+    code {
+      background: #1a1a2e;
+      color: #e0c0ff;
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.88em;
+    }
+    hr { border: none; border-top: 1px solid #2a2a3a; margin: 2rem 0; }
+    ul { padding-left: 1.4em; }
+    li { margin-bottom: 0.3em; }
+    table { border-collapse: collapse; width: 100%; margin-top: 0.5rem; }
+    th, td { border: 1px solid #2a2a3a; padding: 0.5em 0.8em; text-align: left; font-size: 0.9rem; }
+    th { background: #12121a; color: #c4b0ff; }
+    td code { font-size: 0.85em; }
+    ol { padding-left: 1.4em; }
+    ol li { margin-bottom: 0.3em; }
+    strong { color: #e8e0ff; }
+  </style>
+</head>
+<body>
+  <a class="back" href="index.html">← Back</a>
+
+  <h1>RGB Color Studio — Project Specification</h1>
+
+  <h2>Overview</h2>
+  <p>RGB Color Studio is a dark-themed, single-page interactive web application that teaches users how RGB color mixing works through two side-by-side tools. On the left, a <strong>Stage Spotlight Explorer</strong> lets users drag three colored spotlights (red, green, blue) around a dark stage and watch them blend together in real time, with sliders offering precise control over each primary's intensity. On the right, a <strong>Palette Generator</strong> takes the mixed color from the explorer and generates harmonious color schemes with accessibility awareness. The overall aesthetic is cinematic and moody — a dark stage with vivid glowing light.</p>
+
+  <hr>
+
+  <h2>Features</h2>
+  <ul>
+    <li>Three draggable RGB spotlights on a dark canvas that blend additively where they overlap</li>
+    <li>Intensity sliders (0–255) for each primary color, synced with the spotlight positions</li>
+    <li>Live display of the resulting mixed color with its hex code and RGB values</li>
+    <li>Palette Generator supporting Complementary and Split-Complementary harmony types</li>
+    <li>Palette swatches animate in one-by-one when generated</li>
+    <li>"Random Color" button to generate a surprise base color and palette</li>
+    <li>Accessible Palette Mode that checks all palette colors against WCAG AA contrast requirements and flags or replaces any that fail</li>
+    <li>Hex code display on each palette swatch</li>
+  </ul>
+
+  <hr>
+
+  <h2>Layout</h2>
+  <p>The page is a single full-width view divided into two equal panels side by side, with no tabs or scrolling needed on desktop:</p>
+  <ul>
+    <li><strong>Left panel:</strong> Stage Spotlight Explorer (canvas + sliders below)</li>
+    <li><strong>Right panel:</strong> Palette Generator (controls + animated swatches)</li>
+  </ul>
+  <p>A thin glowing divider separates the two panels. A minimal header at the top displays the app title. The page uses a dark background (<code>#0a0a0f</code>) throughout.</p>
+
+  <hr>
+
+  <h2>Explorer Details</h2>
+
+  <h3>Visual Metaphor</h3>
+  <p>A black stage/theater environment. Three circular spotlight glows — one red, one green, one blue — float above the stage floor. Where they overlap, their light blends additively (red + green = yellow, etc.). The overall effect should feel like real theatrical lighting.</p>
+
+  <h3>Controls</h3>
+  <ul>
+    <li>Each spotlight is draggable anywhere within the canvas</li>
+    <li>Below the canvas: three labeled sliders (Red, Green, Blue), each 0–255</li>
+    <li>Moving a slider changes that spotlight's intensity/brightness, not its position</li>
+    <li>Dragging a spotlight does not change its slider value — the two axes are independent</li>
+    <li>A color swatch below the sliders shows the currently mixed color with its hex and RGB values displayed underneath</li>
+  </ul>
+
+  <h3>Animations</h3>
+  <ul>
+    <li>Spotlights have a soft radial gradient glow with a subtle pulse/breathing animation when not being dragged</li>
+    <li>Blending regions smoothly update as spotlights move (using canvas <code>globalCompositeOperation: 'screen'</code> or equivalent)</li>
+    <li>Smooth CSS transitions on the result swatch when the color changes</li>
+    <li>When a spotlight is grabbed, its glow intensifies slightly to indicate it's active</li>
+  </ul>
+
+  <h3>Technical Notes</h3>
+  <ul>
+    <li>Use HTML5 <code>&lt;canvas&gt;</code> for the spotlight rendering</li>
+    <li>Draw each spotlight as a radial gradient with the primary color fading to transparent</li>
+    <li>Use <code>globalCompositeOperation = 'screen'</code> on the canvas context for additive blending</li>
+    <li>Spotlight intensity (slider value) maps to the alpha/opacity of the gradient</li>
+  </ul>
+
+  <hr>
+
+  <h2>Palette Generator Details</h2>
+
+  <h3>Harmony Types</h3>
+  <p>Two harmony modes selectable via toggle buttons:</p>
+  <ol>
+    <li><strong>Complementary</strong> — base color + the color directly opposite on the RGB wheel (180° offset in HSL hue)</li>
+    <li><strong>Split-Complementary</strong> — base color + two colors adjacent to its complement (±30° from the complement)</li>
+  </ol>
+
+  <h3>Base Color Source</h3>
+  <p>The base color is automatically pulled from the Explorer's current mixed color. There is also a "Random Color" button that generates a random hue at full saturation and sets both the palette and the explorer sliders accordingly.</p>
+
+  <h3>Palette Display</h3>
+  <ul>
+    <li>Each palette is shown as a row of large color swatches (min 80px × 120px each)</li>
+    <li>Swatches animate in one by one with a fade + slide-up transition when the palette updates</li>
+    <li>Each swatch displays its hex code below it in a small monospace font</li>
+    <li>Clicking a swatch copies the hex code to clipboard; a brief "Copied!" tooltip confirms it</li>
+  </ul>
+
+  <h3>Accessible Palette Mode</h3>
+  <ul>
+    <li>A toggle labeled "Accessible Mode" appears above the palette</li>
+    <li>When enabled, each swatch pair is checked for WCAG AA contrast ratio (minimum 4.5:1 for normal text)</li>
+    <li>Swatches that fail contrast are outlined with a warning indicator (⚠️ icon + red border)</li>
+    <li>A small text label shows the contrast ratio for each swatch: e.g., <code>Contrast: 3.2:1 ✗</code> or <code>Contrast: 5.8:1 ✓</code></li>
+    <li>Uses the WCAG relative luminance formula: <code>(L1 + 0.05) / (L2 + 0.05)</code> where luminance = <code>0.2126*R + 0.7152*G + 0.0722*B</code> (after linearizing sRGB values)</li>
+  </ul>
+
+  <hr>
+
+  <h2>Interactions</h2>
+  <table>
+    <tr><th>Action</th><th>Result</th></tr>
+    <tr><td>Drag a spotlight</td><td>Spotlight moves; blended color in canvas updates in real time</td></tr>
+    <tr><td>Move a slider</td><td>That spotlight's intensity updates; mixed color swatch updates</td></tr>
+    <tr><td>Click "Random Color"</td><td>Random hue generated; sliders and explorer update; new palette animates in</td></tr>
+    <tr><td>Click Complementary / Split-Complementary toggle</td><td>Palette recalculates and re-animates with new swatches</td></tr>
+    <tr><td>Toggle "Accessible Mode"</td><td>Each swatch immediately shows contrast ratio and pass/fail indicator</td></tr>
+    <tr><td>Click a palette swatch</td><td>Hex code copied to clipboard; "Copied!" tooltip appears for 1.5s</td></tr>
+  </table>
+
+  <hr>
+
+  <h2>Visual Style</h2>
+  <table>
+    <tr><th>Element</th><th>Value</th></tr>
+    <tr><td>Background</td><td><code>#0a0a0f</code> (near black)</td></tr>
+    <tr><td>Panel backgrounds</td><td><code>#12121a</code></td></tr>
+    <tr><td>Dividers / borders</td><td>Subtle glow in the dominant mixed color, <code>1px</code></td></tr>
+    <tr><td>Font</td><td><code>'Inter'</code> or <code>'Space Grotesk'</code> from Google Fonts</td></tr>
+    <tr><td>Hex/code labels</td><td>Monospace: <code>'JetBrains Mono'</code> or <code>'Fira Code'</code></td></tr>
+    <tr><td>Slider track</td><td>Dark gray with a glowing fill in the slider's primary color</td></tr>
+    <tr><td>Slider thumb</td><td>White circle with a subtle drop shadow</td></tr>
+    <tr><td>Swatch animation</td><td><code>opacity 0 → 1</code> + <code>translateY(10px → 0)</code> staggered by 80ms per swatch</td></tr>
+    <tr><td>Button style</td><td>Pill-shaped, dark fill, glowing border in current accent color</td></tr>
+    <tr><td>Contrast pass indicator</td><td>Green checkmark ✓</td></tr>
+    <tr><td>Contrast fail indicator</td><td>Red warning ⚠ with red outline on swatch</td></tr>
+  </table>
+
+  <hr>
+
+  <h2>Technical Notes</h2>
+  <ul>
+    <li>Single <code>index.html</code> file with embedded <code>&lt;style&gt;</code> and <code>&lt;script&gt;</code> — no build step required</li>
+    <li>No external libraries needed; pure vanilla HTML/CSS/JavaScript</li>
+    <li>Canvas spotlight blending: use <code>globalCompositeOperation = 'screen'</code> for additive light mixing</li>
+    <li>HSL color space for palette math: convert mixed RGB → HSL, rotate hue, convert back to RGB</li>
+    <li>WCAG luminance: linearize each channel with <code>c &lt;= 0.04045 ? c/12.92 : ((c+0.055)/1.055)^2.4</code> before weighting</li>
+    <li>Clipboard API: <code>navigator.clipboard.writeText(hex)</code> with fallback to <code>document.execCommand('copy')</code></li>
+    <li>CSS custom properties for the accent/glow color so it can update dynamically as the mixed color changes</li>
+    <li>Responsive: on screens narrower than 768px, stack panels vertically instead of side by side</li>
+  </ul>
+</body>
+</html>

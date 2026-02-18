@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RGB Color Studio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent: #7c5cfc;
+      --bg: #0a0a0f;
+      --panel: #12121a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: #d0d0e0;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      text-align: center;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #1e1e2e;
+    }
+    header h1 {
+      font-size: 1.4rem;
+      letter-spacing: 0.1em;
+      color: #fff;
+      text-transform: uppercase;
+    }
+
+    .studio {
+      display: flex;
+      flex: 1;
+    }
+
+    .panel {
+      flex: 1;
+      padding: 1.5rem;
+      background: var(--panel);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .panel-title {
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #8070c0;
+    }
+
+    .divider {
+      width: 1px;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+      opacity: 0.5;
+      flex-shrink: 0;
+      transition: background 0.4s, box-shadow 0.4s;
+    }
+
+    /* ── Canvas ── */
+    canvas {
+      display: block;
+      width: 100%;
+      height: 280px;
+      border-radius: 10px;
+      background: #050508;
+      cursor: crosshair;
+    }
+
+    /* ── Sliders ── */
+    .sliders { display: flex; flex-direction: column; gap: 0.55rem; }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+    }
+
+    .slider-label {
+      width: 46px;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+    .slider-label.r { color: #ff6666; }
+    .slider-label.g { color: #66ff88; }
+    .slider-label.b { color: #6699ff; }
+
+    input[type=range] {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 5px;
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 0 5px rgba(0,0,0,0.6);
+      cursor: grab;
+    }
+    input[type=range]#sr { background: linear-gradient(to right,#330000,#ff0000); }
+    input[type=range]#sg { background: linear-gradient(to right,#003300,#00ff00); }
+    input[type=range]#sb { background: linear-gradient(to right,#000033,#4444ff); }
+
+    .slider-val {
+      width: 30px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: #666;
+      text-align: right;
+    }
+
+    /* ── Result swatch ── */
+    .result-swatch {
+      height: 72px;
+      border-radius: 8px;
+      border: 1px solid #2a2a3a;
+      transition: background 0.25s ease;
+    }
+    .result-info {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: #888;
+      text-align: center;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Palette controls ── */
+    .palette-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 0.35em 1em;
+      border-radius: 999px;
+      border: 1px solid var(--accent);
+      background: transparent;
+      color: #c4b0ff;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: background 0.18s, box-shadow 0.18s;
+    }
+    .btn:hover {
+      background: color-mix(in srgb, var(--accent) 15%, transparent);
+      box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 50%, transparent);
+    }
+    .btn.active {
+      background: color-mix(in srgb, var(--accent) 25%, transparent);
+      box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 60%, transparent);
+    }
+    .btn.random {
+      border-color: #ff8844;
+      color: #ffbb99;
+    }
+    .btn.random:hover {
+      background: #ff884420;
+      box-shadow: 0 0 10px #ff884460;
+    }
+
+    .accessible-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.82rem;
+      color: #888;
+      cursor: pointer;
+      user-select: none;
+    }
+    .accessible-row input {
+      cursor: pointer;
+      accent-color: var(--accent);
+      width: 14px;
+      height: 14px;
+    }
+
+    /* ── Swatches ── */
+    .swatches {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      flex: 1;
+    }
+
+    .swatch {
+      flex: 1;
+      min-width: 80px;
+      min-height: 120px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 0.5rem;
+      cursor: pointer;
+      position: relative;
+      border: 2px solid transparent;
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    .swatch.in {
+      animation: swatchIn 0.28s ease forwards;
+    }
+    @keyframes swatchIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .swatch:hover { filter: brightness(1.1); }
+
+    .swatch-hex {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      background: rgba(0,0,0,0.55);
+      color: #fff;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+    .swatch-contrast {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      background: rgba(0,0,0,0.55);
+      padding: 1px 5px;
+      border-radius: 3px;
+      margin-top: 3px;
+    }
+    .swatch.fail { border-color: #ff4444; }
+    .swatch-warn {
+      position: absolute;
+      top: 6px; right: 7px;
+      font-size: 0.9rem;
+    }
+
+    /* ── Tooltip ── */
+    .tooltip {
+      position: fixed;
+      background: #222;
+      color: #fff;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 99;
+    }
+    .tooltip.show { opacity: 1; }
+
+    @media (max-width: 768px) {
+      .studio { flex-direction: column; }
+      .divider { width: 100%; height: 1px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>RGB Color Studio</h1>
+</header>
+
+<div class="studio">
+
+  <!-- Explorer Panel -->
+  <div class="panel">
+    <div class="panel-title">Stage Spotlight Explorer</div>
+    <canvas id="stage"></canvas>
+
+    <div class="sliders">
+      <div class="slider-row">
+        <span class="slider-label r">Red</span>
+        <input type="range" id="sr" min="0" max="255" value="200">
+        <span class="slider-val" id="vr">200</span>
+      </div>
+      <div class="slider-row">
+        <span class="slider-label g">Green</span>
+        <input type="range" id="sg" min="0" max="255" value="200">
+        <span class="slider-val" id="vg">200</span>
+      </div>
+      <div class="slider-row">
+        <span class="slider-label b">Blue</span>
+        <input type="range" id="sb" min="0" max="255" value="200">
+        <span class="slider-val" id="vb">200</span>
+      </div>
+    </div>
+
+    <div class="result-swatch" id="result-swatch"></div>
+    <div class="result-info" id="result-info"></div>
+  </div>
+
+  <div class="divider" id="divider"></div>
+
+  <!-- Palette Panel -->
+  <div class="panel">
+    <div class="panel-title">Palette Generator</div>
+
+    <div class="palette-controls">
+      <button class="btn active" id="btn-comp">Complementary</button>
+      <button class="btn" id="btn-split">Split-Complementary</button>
+      <button class="btn random" id="btn-random">Random Color</button>
+    </div>
+
+    <label class="accessible-row">
+      <input type="checkbox" id="accessible-toggle">
+      Accessible Mode
+    </label>
+
+    <div class="swatches" id="swatches"></div>
+  </div>
+
+</div>
+
+<div class="tooltip" id="tooltip">Copied!</div>
+
+<script>
+  // ── Canvas setup ─────────────────────────────────────────────────
+  const canvas = document.getElementById('stage');
+  const ctx = canvas.getContext('2d');
+
+  function syncCanvasSize() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+    placeSpotlights();
+  }
+
+  // ── Spotlight state ──────────────────────────────────────────────
+  const spots = [
+    { color: [255, 0, 0], intensity: 200, x: 0, y: 0 },
+    { color: [0, 255, 0], intensity: 200, x: 0, y: 0 },
+    { color: [0, 0, 255], intensity: 200, x: 0, y: 0 },
+  ];
+
+  function placeSpotlights() {
+    const w = canvas.width, h = canvas.height;
+    spots[0].x = w * 0.35; spots[0].y = h * 0.50;
+    spots[1].x = w * 0.58; spots[1].y = h * 0.32;
+    spots[2].x = w * 0.58; spots[2].y = h * 0.68;
+  }
+
+  let dragIdx = -1;
+  let t = 0;
+
+  // ── Render loop ──────────────────────────────────────────────────
+  function render() {
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = '#050508';
+    ctx.fillRect(0, 0, w, h);
+
+    ctx.globalCompositeOperation = 'screen';
+
+    spots.forEach((s, i) => {
+      const pulse = dragIdx === i
+        ? 1.18
+        : 1 + 0.055 * Math.sin(t * 0.0014 + i * 2.09);
+      const radius = Math.min(w, h) * 0.40 * pulse;
+      const alpha = s.intensity / 255;
+      const [r, g, b] = s.color;
+
+      const grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, radius);
+      grad.addColorStop(0,   `rgba(${r},${g},${b},${alpha})`);
+      grad.addColorStop(0.45,`rgba(${r},${g},${b},${(alpha * 0.35).toFixed(3)})`);
+      grad.addColorStop(1,   `rgba(${r},${g},${b},0)`);
+
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, radius, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    ctx.globalCompositeOperation = 'source-over';
+    t++;
+    requestAnimationFrame(render);
+  }
+
+  // ── Drag ────────────────────────────────────────────────────────
+  function canvasXY(e) {
+    const rect = canvas.getBoundingClientRect();
+    const sx = canvas.width / rect.width;
+    const sy = canvas.height / rect.height;
+    const src = e.touches ? e.touches[0] : e;
+    return { x: (src.clientX - rect.left) * sx, y: (src.clientY - rect.top) * sy };
+  }
+
+  function nearest(x, y) {
+    let best = Infinity, idx = -1;
+    spots.forEach((s, i) => {
+      const d = Math.hypot(s.x - x, s.y - y);
+      if (d < best) { best = d; idx = i; }
+    });
+    return best < Math.min(canvas.width, canvas.height) * 0.42 ? idx : -1;
+  }
+
+  canvas.addEventListener('mousedown', e => {
+    const p = canvasXY(e); dragIdx = nearest(p.x, p.y);
+  });
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    const p = canvasXY(e); dragIdx = nearest(p.x, p.y);
+  }, { passive: false });
+
+  function onMove(e) {
+    if (dragIdx < 0) return;
+    const p = canvasXY(e);
+    spots[dragIdx].x = Math.max(0, Math.min(canvas.width,  p.x));
+    spots[dragIdx].y = Math.max(0, Math.min(canvas.height, p.y));
+  }
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('touchmove', e => { e.preventDefault(); onMove(e); }, { passive: false });
+  window.addEventListener('mouseup',  () => { dragIdx = -1; });
+  window.addEventListener('touchend', () => { dragIdx = -1; });
+
+  // ── Sliders ──────────────────────────────────────────────────────
+  const sliderR = document.getElementById('sr');
+  const sliderG = document.getElementById('sg');
+  const sliderB = document.getElementById('sb');
+
+  function onSlider() {
+    spots[0].intensity = +sliderR.value;
+    spots[1].intensity = +sliderG.value;
+    spots[2].intensity = +sliderB.value;
+    document.getElementById('vr').textContent = sliderR.value;
+    document.getElementById('vg').textContent = sliderG.value;
+    document.getElementById('vb').textContent = sliderB.value;
+    updateSwatch();
+    buildPalette();
+  }
+
+  sliderR.addEventListener('input', onSlider);
+  sliderG.addEventListener('input', onSlider);
+  sliderB.addEventListener('input', onSlider);
+
+  // ── Mixed color ──────────────────────────────────────────────────
+  function mixed() {
+    return [+sliderR.value, +sliderG.value, +sliderB.value];
+  }
+
+  function toHex(r, g, b) {
+    return '#' + [r, g, b].map(v =>
+      Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')
+    ).join('');
+  }
+
+  function updateSwatch() {
+    const [r, g, b] = mixed();
+    const hex = toHex(r, g, b);
+    document.getElementById('result-swatch').style.background = hex;
+    document.getElementById('result-info').textContent =
+      `${hex.toUpperCase()}  ·  rgb(${r}, ${g}, ${b})`;
+
+    // Update accent glow — clamp to a minimum lightness so pure black doesn't kill the UI
+    const [, , l] = rgbToHsl(r, g, b);
+    const accentColor = l < 0.12 ? '#7c5cfc' : hex;
+    document.documentElement.style.setProperty('--accent', accentColor);
+    document.getElementById('divider').style.background = accentColor;
+    document.getElementById('divider').style.boxShadow = `0 0 10px ${accentColor}`;
+  }
+
+  // ── Color math ───────────────────────────────────────────────────
+  function rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s;
+    const l = (max + min) / 2;
+    if (max === min) {
+      h = s = 0;
+    } else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+        case g: h = ((b - r) / d + 2) / 6; break;
+        default:h = ((r - g) / d + 4) / 6;
+      }
+    }
+    return [h * 360, s, l];
+  }
+
+  function hslToRgb(h, s, l) {
+    h /= 360;
+    function hue2(p, q, t) {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1/6) return p + (q - p) * 6 * t;
+      if (t < 1/2) return q;
+      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+      return p;
+    }
+    if (s === 0) { const v = Math.round(l * 255); return [v, v, v]; }
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    return [
+      Math.round(hue2(p, q, h + 1/3) * 255),
+      Math.round(hue2(p, q, h)       * 255),
+      Math.round(hue2(p, q, h - 1/3) * 255),
+    ];
+  }
+
+  function harmonies(r, g, b, mode) {
+    const [h, s, l] = rgbToHsl(r, g, b);
+    const S = Math.max(s, 0.55);
+    const L = l < 0.15 ? 0.5 : l > 0.85 ? 0.45 : l;
+    if (mode === 'comp') {
+      return [
+        [r, g, b],
+        hslToRgb((h + 180) % 360, S, L),
+      ];
+    } else {
+      return [
+        [r, g, b],
+        hslToRgb((h + 150) % 360, S, L),
+        hslToRgb((h + 210) % 360, S, L),
+      ];
+    }
+  }
+
+  // ── WCAG ────────────────────────────────────────────────────────
+  function lin(c) {
+    c /= 255;
+    return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  }
+  function lum(r, g, b) {
+    return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  }
+  function contrast(r1, g1, b1, r2, g2, b2) {
+    const l1 = lum(r1, g1, b1), l2 = lum(r2, g2, b2);
+    return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+  }
+
+  // ── Palette ──────────────────────────────────────────────────────
+  let mode = 'comp';
+
+  document.getElementById('btn-comp').addEventListener('click', () => {
+    mode = 'comp';
+    document.getElementById('btn-comp').classList.add('active');
+    document.getElementById('btn-split').classList.remove('active');
+    buildPalette();
+  });
+  document.getElementById('btn-split').addEventListener('click', () => {
+    mode = 'split';
+    document.getElementById('btn-split').classList.add('active');
+    document.getElementById('btn-comp').classList.remove('active');
+    buildPalette();
+  });
+  document.getElementById('accessible-toggle').addEventListener('change', buildPalette);
+
+  function buildPalette() {
+    const [r, g, b] = mixed();
+    const colors = harmonies(r, g, b, mode);
+    const accessible = document.getElementById('accessible-toggle').checked;
+    const container = document.getElementById('swatches');
+    container.innerHTML = '';
+
+    colors.forEach(([cr, cg, cb], i) => {
+      const hex = toHex(cr, cg, cb);
+      const el = document.createElement('div');
+      el.className = 'swatch';
+      el.style.background = hex;
+
+      const hexLabel = document.createElement('div');
+      hexLabel.className = 'swatch-hex';
+      hexLabel.textContent = hex.toUpperCase();
+      el.appendChild(hexLabel);
+
+      if (accessible) {
+        const ratio = contrast(cr, cg, cb, 255, 255, 255);
+        const pass = ratio >= 4.5;
+        const cl = document.createElement('div');
+        cl.className = 'swatch-contrast';
+        cl.textContent = `${ratio.toFixed(1)}:1 ${pass ? '✓' : '✗'}`;
+        cl.style.color = pass ? '#88ff88' : '#ff7777';
+        el.appendChild(cl);
+        if (!pass) {
+          el.classList.add('fail');
+          const w = document.createElement('div');
+          w.className = 'swatch-warn';
+          w.textContent = '⚠';
+          el.appendChild(w);
+        }
+      }
+
+      el.addEventListener('click', () => copyHex(hex, el));
+      container.appendChild(el);
+      setTimeout(() => el.classList.add('in'), i * 80);
+    });
+  }
+
+  // ── Clipboard ────────────────────────────────────────────────────
+  const tooltip = document.getElementById('tooltip');
+  let tipTimer;
+
+  function copyHex(hex, el) {
+    navigator.clipboard.writeText(hex).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = hex;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    });
+    const rect = el.getBoundingClientRect();
+    tooltip.style.left = (rect.left + rect.width / 2 - 28) + 'px';
+    tooltip.style.top  = (rect.top - 32) + 'px';
+    tooltip.classList.add('show');
+    clearTimeout(tipTimer);
+    tipTimer = setTimeout(() => tooltip.classList.remove('show'), 1500);
+  }
+
+  // ── Random color ─────────────────────────────────────────────────
+  document.getElementById('btn-random').addEventListener('click', () => {
+    const [r, g, b] = hslToRgb(Math.random() * 360, 1, 0.5);
+    sliderR.value = r; sliderG.value = g; sliderB.value = b;
+    onSlider();
+  });
+
+  // ── Init ─────────────────────────────────────────────────────────
+  new ResizeObserver(syncCanvasSize).observe(canvas);
+  syncCanvasSize();
+  render();
+  updateSwatch();
+  buildPalette();
+</script>
+</body>
+</html>
