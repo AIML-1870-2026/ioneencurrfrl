@@ -5,249 +5,328 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Readable Explorer</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
     font-family: Inter, system-ui, sans-serif;
-    background: #1a1a2e;
+    background: #0d0d1a;
     color: #c8cdd8;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    background-image:
+      radial-gradient(ellipse at 20% 0%, rgba(126,200,227,0.07) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.07) 0%, transparent 50%);
   }
 
-  /* Header */
+  /* ── Header ── */
   header {
     text-align: center;
-    padding: 18px 24px 14px;
-    border-bottom: 1px solid #2e2e4a;
-    background: #16162a;
+    padding: 22px 24px 18px;
+    border-bottom: 1px solid #1e1e36;
+    background: linear-gradient(180deg, #12122a 0%, #0d0d1a 100%);
+    position: relative;
+    overflow: hidden;
   }
-  header h1 { font-size: 1.5rem; color: #7ec8e3; letter-spacing: 0.04em; }
-  header p  { font-size: 0.82rem; color: #6b7080; margin-top: 3px; }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(126,200,227,0.05), transparent);
+    animation: shimmer 4s ease-in-out infinite;
+  }
+  @keyframes shimmer {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+  }
+  header h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #7ec8e3 0%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 0.04em;
+    position: relative;
+  }
+  header p { font-size: 0.8rem; color: #4a5068; margin-top: 4px; position: relative; }
 
-  /* Main grid */
+  /* ── Main grid ── */
   .main {
     display: grid;
-    grid-template-columns: 260px 1fr 210px;
+    grid-template-columns: 268px 1fr 220px;
     flex: 1;
-    gap: 0;
     min-height: 0;
   }
 
-  /* Shared panel styles */
+  /* ── Panels ── */
   .panel {
-    padding: 20px 18px;
-    border-right: 1px solid #2e2e4a;
+    padding: 20px 16px;
+    border-right: 1px solid #1e1e36;
     overflow-y: auto;
+    background: #0f0f20;
   }
-  .panel:last-child { border-right: none; }
+  .panel:last-child { border-right: none; border-left: 1px solid #1e1e36; }
 
   .panel-title {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #7ec8e3;
-    margin-bottom: 16px;
+    letter-spacing: 0.12em;
+    color: #4a5068;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #1e1e36;
   }
 
-  /* RGB control group */
-  .color-group { margin-bottom: 22px; }
-  .color-group-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #9ba3b2;
-    margin-bottom: 10px;
+  /* ── Color swatch + hex ── */
+  .color-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    margin-bottom: 12px;
   }
   .color-swatch {
-    width: 18px; height: 18px;
-    border-radius: 4px;
-    border: 1px solid #3a3a5a;
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: 2px solid rgba(255,255,255,0.08);
     flex-shrink: 0;
+    box-shadow: 0 0 12px rgba(0,0,0,0.4);
+    transition: background 0.1s;
+  }
+  .hex-val {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #7ec8e3;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+  }
+  .color-label {
+    font-size: 0.7rem;
+    color: #4a5068;
+    margin-left: auto;
   }
 
+  /* ── RGB rows ── */
   .rgb-row {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 8px;
+    margin-bottom: 9px;
   }
-  .rgb-row label {
-    font-size: 0.72rem;
+  .ch-label {
+    font-size: 0.68rem;
     font-weight: 700;
-    color: #7ec8e3;
-    width: 12px;
+    width: 11px;
     flex-shrink: 0;
+    text-align: center;
   }
-  .rgb-row input[type="range"] {
+  .ch-r { color: #f87171; }
+  .ch-g { color: #4ade80; }
+  .ch-b { color: #60a5fa; }
+
+  input[type="range"] {
     flex: 1;
     -webkit-appearance: none;
-    height: 4px;
-    background: #2e2e4a;
-    border-radius: 2px;
+    height: 5px;
+    border-radius: 3px;
     outline: none;
     cursor: pointer;
+    transition: opacity 0.2s;
   }
-  .rgb-row input[type="range"]::-webkit-slider-thumb {
+  input[type="range"].r-track { background: linear-gradient(to right, #1e0a0a, #f87171); }
+  input[type="range"].g-track { background: linear-gradient(to right, #0a1e0a, #4ade80); }
+  input[type="range"].b-track { background: linear-gradient(to right, #0a0a1e, #60a5fa); }
+  input[type="range"].fs-track { background: linear-gradient(to right, #1e1e36, #a78bfa); }
+
+  input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 14px; height: 14px;
+    width: 15px; height: 15px;
     border-radius: 50%;
-    background: #7ec8e3;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.5);
     cursor: pointer;
+    transition: transform 0.1s;
   }
-  .rgb-row input[type="number"] {
-    width: 52px;
-    padding: 3px 5px;
-    font-size: 0.75rem;
-    background: #0f0f20;
-    border: 1px solid #3a3a5a;
-    border-radius: 4px;
+  input[type="range"]::-webkit-slider-thumb:active { transform: scale(1.25); }
+
+  input[type="number"] {
+    width: 50px;
+    padding: 4px 5px;
+    font-size: 0.72rem;
+    font-family: inherit;
+    background: #1a1a2e;
+    border: 1px solid #2a2a42;
+    border-radius: 6px;
     color: #c8cdd8;
     text-align: center;
     -moz-appearance: textfield;
+    transition: border-color 0.2s;
   }
-  .rgb-row input[type="number"]::-webkit-inner-spin-button,
-  .rgb-row input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+  input[type="number"]:focus { outline: none; border-color: #7ec8e3; }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
 
-  /* Font size */
-  .font-size-group { margin-top: 6px; }
+  .color-group { margin-bottom: 20px; }
+
+  /* ── Font size ── */
   .font-size-row {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-top: 8px;
-  }
-  .font-size-row input[type="range"] {
-    flex: 1;
-    -webkit-appearance: none;
-    height: 4px;
-    background: #2e2e4a;
-    border-radius: 2px;
-    outline: none;
-    cursor: pointer;
-  }
-  .font-size-row input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 14px; height: 14px;
-    border-radius: 50%;
-    background: #7ec8e3;
-    cursor: pointer;
+    gap: 10px;
+    margin-top: 6px;
   }
   .font-size-val {
     font-size: 0.75rem;
-    color: #9ba3b2;
-    width: 48px;
+    color: #a78bfa;
+    font-weight: 600;
+    width: 42px;
     text-align: right;
   }
 
-  /* Disabled overlay */
-  .controls-disabled {
-    position: relative;
-  }
+  /* ── Disabled overlay ── */
+  .left-panel-inner { position: relative; }
   .controls-disabled::after {
     content: attr(data-disabled-msg);
     position: absolute;
-    inset: 0;
-    background: rgba(26,26,46,0.82);
+    inset: -4px;
+    background: rgba(13,13,26,0.88);
+    backdrop-filter: blur(2px);
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
     font-size: 0.72rem;
-    color: #7ec8e3;
-    padding: 12px;
-    border-radius: 6px;
+    font-weight: 600;
+    color: #a78bfa;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(167,139,250,0.2);
     pointer-events: all;
   }
-  .left-panel-inner {
-    position: relative;
-  }
 
-  /* Preview area */
+  /* ── Preview ── */
   .preview-panel {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 32px 28px;
+    padding: 36px 32px;
+    background: #0d0d1a;
+    position: relative;
+  }
+  .preview-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 32px 32px;
   }
   #preview-box {
     width: 100%;
-    max-width: 580px;
-    min-height: 220px;
-    border-radius: 10px;
-    padding: 36px 40px;
-    border: 1px solid #2e2e4a;
-    transition: background 0.1s, color 0.1s;
+    max-width: 560px;
+    min-height: 200px;
+    border-radius: 14px;
+    padding: 38px 44px;
+    border: 1px solid rgba(255,255,255,0.07);
+    transition: background 0.12s, color 0.12s, box-shadow 0.3s;
+    position: relative;
+    z-index: 1;
   }
   #preview-box h2 {
     margin-bottom: 14px;
     font-weight: 700;
+    line-height: 1.3;
   }
-  #preview-box p { line-height: 1.65; }
+  #preview-box p { line-height: 1.7; }
 
-  /* Right sidebar */
-  .right-panel { border-right: none; border-left: 1px solid #2e2e4a; }
-
+  /* ── Right sidebar ── */
   .vision-option {
     display: flex;
     align-items: flex-start;
-    gap: 9px;
-    padding: 9px 10px;
-    border-radius: 6px;
+    gap: 10px;
+    padding: 10px 10px;
+    border-radius: 8px;
     cursor: pointer;
-    margin-bottom: 4px;
-    transition: background 0.15s;
+    margin-bottom: 3px;
+    border: 1px solid transparent;
+    transition: background 0.15s, border-color 0.15s;
   }
-  .vision-option:hover { background: #22223a; }
+  .vision-option:hover { background: #161628; border-color: #2a2a42; }
+  .vision-option:has(input:checked) {
+    background: #13132a;
+    border-color: rgba(167,139,250,0.3);
+  }
   .vision-option input[type="radio"] {
-    margin-top: 2px;
-    accent-color: #7ec8e3;
+    margin-top: 3px;
+    accent-color: #a78bfa;
     flex-shrink: 0;
   }
-  .vision-option-text { font-size: 0.8rem; }
-  .vision-option-text strong { display: block; color: #c8cdd8; }
-  .vision-option-text span { font-size: 0.7rem; color: #6b7080; }
+  .vision-option-text strong { display: block; font-size: 0.8rem; color: #c8cdd8; }
+  .vision-option-text span { font-size: 0.68rem; color: #4a5068; }
 
-  /* Bottom bar */
+  /* ── Bottom bar ── */
   .bottom-bar {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 40px;
-    padding: 14px 28px;
-    border-top: 1px solid #2e2e4a;
-    background: #16162a;
+    gap: 0;
+    border-top: 1px solid #1e1e36;
+    background: #0f0f20;
     flex-wrap: wrap;
   }
   .stat {
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: 16px 40px;
+    border-right: 1px solid #1e1e36;
+    flex: 1;
+    min-width: 160px;
   }
-  .stat-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7080; }
-  .stat-value { font-size: 1.25rem; font-weight: 700; color: #7ec8e3; margin-top: 2px; }
-  #ratio-badge {
-    font-size: 0.65rem;
+  .stat:last-child { border-right: none; }
+  .stat-label {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #4a5068;
+  }
+  .stat-value {
+    font-size: 1.4rem;
     font-weight: 700;
-    padding: 2px 7px;
-    border-radius: 999px;
+    color: #c8cdd8;
     margin-top: 4px;
-    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+    transition: color 0.3s;
   }
-  .badge-fail    { background: #5c1a1a; color: #f87171; }
-  .badge-aa      { background: #1a3a2e; color: #4ade80; }
-  .badge-aaa     { background: #1a2e1a; color: #86efac; }
+  #ratio-badge {
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-top: 5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .badge-fail { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+  .badge-aa-lg { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+  .badge-aa  { background: rgba(74,222,128,0.12); color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
+  .badge-aaa { background: rgba(167,139,250,0.12); color: #a78bfa; border: 1px solid rgba(167,139,250,0.3); }
+
+  /* glow on preview matches contrast level */
+  .glow-fail { box-shadow: 0 8px 48px rgba(239,68,68,0.15), 0 2px 16px rgba(0,0,0,0.6); }
+  .glow-aa   { box-shadow: 0 8px 48px rgba(74,222,128,0.12), 0 2px 16px rgba(0,0,0,0.6); }
+  .glow-aaa  { box-shadow: 0 8px 48px rgba(167,139,250,0.14), 0 2px 16px rgba(0,0,0,0.6); }
 </style>
 </head>
 <body>
 
 <header>
   <h1>Readable Explorer</h1>
-  <p>Explore how color and size affect readability &amp; WCAG contrast</p>
+  <p>Real-time WCAG contrast &amp; color vision simulation</p>
 </header>
 
 <div class="main">
@@ -257,72 +336,72 @@
     <div class="left-panel-inner" id="left-panel-inner">
 
       <div class="panel-title">Background Color</div>
-      <div class="color-group" id="bg-group">
-        <div class="color-group-label">
+      <div class="color-group">
+        <div class="color-header">
           <div class="color-swatch" id="bg-swatch"></div>
-          RGB Preview
+          <span class="hex-val" id="bg-hex">#1e1e3c</span>
+          <span class="color-label">background</span>
         </div>
         <div class="rgb-row">
-          <label>R</label>
-          <input type="range" id="bg-r" min="0" max="255" value="30" />
+          <span class="ch-label ch-r">R</span>
+          <input type="range" class="r-track" id="bg-r" min="0" max="255" value="30" />
           <input type="number" id="bg-r-num" min="0" max="255" value="30" />
         </div>
         <div class="rgb-row">
-          <label>G</label>
-          <input type="range" id="bg-g" min="0" max="255" value="30" />
+          <span class="ch-label ch-g">G</span>
+          <input type="range" class="g-track" id="bg-g" min="0" max="255" value="30" />
           <input type="number" id="bg-g-num" min="0" max="255" value="30" />
         </div>
         <div class="rgb-row">
-          <label>B</label>
-          <input type="range" id="bg-b" min="0" max="255" value="60" />
+          <span class="ch-label ch-b">B</span>
+          <input type="range" class="b-track" id="bg-b" min="0" max="255" value="60" />
           <input type="number" id="bg-b-num" min="0" max="255" value="60" />
         </div>
       </div>
 
-      <div class="panel-title" style="margin-top:8px;">Text Color</div>
-      <div class="color-group" id="txt-group">
-        <div class="color-group-label">
+      <div class="panel-title">Text Color</div>
+      <div class="color-group">
+        <div class="color-header">
           <div class="color-swatch" id="txt-swatch"></div>
-          RGB Preview
+          <span class="hex-val" id="txt-hex">#dcdcf0</span>
+          <span class="color-label">text</span>
         </div>
         <div class="rgb-row">
-          <label>R</label>
-          <input type="range" id="txt-r" min="0" max="255" value="220" />
+          <span class="ch-label ch-r">R</span>
+          <input type="range" class="r-track" id="txt-r" min="0" max="255" value="220" />
           <input type="number" id="txt-r-num" min="0" max="255" value="220" />
         </div>
         <div class="rgb-row">
-          <label>G</label>
-          <input type="range" id="txt-g" min="0" max="255" value="220" />
+          <span class="ch-label ch-g">G</span>
+          <input type="range" class="g-track" id="txt-g" min="0" max="255" value="220" />
           <input type="number" id="txt-g-num" min="0" max="255" value="220" />
         </div>
         <div class="rgb-row">
-          <label>B</label>
-          <input type="range" id="txt-b" min="0" max="255" value="240" />
+          <span class="ch-label ch-b">B</span>
+          <input type="range" class="b-track" id="txt-b" min="0" max="255" value="240" />
           <input type="number" id="txt-b-num" min="0" max="255" value="240" />
         </div>
       </div>
 
-      <div class="panel-title" style="margin-top:8px;">Font Size</div>
-      <div class="font-size-group">
-        <div class="font-size-row">
-          <input type="range" id="font-size" min="10" max="72" value="18" />
-          <span class="font-size-val" id="font-size-val">18 px</span>
-        </div>
+      <div class="panel-title">Font Size</div>
+      <div class="font-size-row">
+        <input type="range" class="fs-track" id="font-size" min="10" max="72" value="18" />
+        <span class="font-size-val" id="font-size-val">18 px</span>
       </div>
 
-    </div><!-- left-panel-inner -->
-  </div><!-- left-panel -->
+    </div>
+  </div>
 
-  <!-- CENTER: PREVIEW -->
+  <!-- CENTER PREVIEW -->
   <div class="preview-panel">
-    <div id="preview-box">
+    <div id="preview-box" class="glow-aaa">
       <h2 id="preview-heading">The Quick Brown Fox</h2>
       <p id="preview-body">Good design is accessible design. The contrast between text and its background directly affects how readable content is for all users, including those with visual impairments.</p>
     </div>
   </div>
 
   <!-- RIGHT PANEL -->
-  <div class="panel right-panel">
+  <div class="panel">
     <div class="panel-title">Color Vision</div>
 
     <label class="vision-option">
@@ -332,7 +411,6 @@
         <span>Full color perception</span>
       </div>
     </label>
-
     <label class="vision-option">
       <input type="radio" name="vision" value="protanopia" />
       <div class="vision-option-text">
@@ -340,7 +418,6 @@
         <span>Red-blind</span>
       </div>
     </label>
-
     <label class="vision-option">
       <input type="radio" name="vision" value="deuteranopia" />
       <div class="vision-option-text">
@@ -348,7 +425,6 @@
         <span>Green-blind</span>
       </div>
     </label>
-
     <label class="vision-option">
       <input type="radio" name="vision" value="tritanopia" />
       <div class="vision-option-text">
@@ -356,7 +432,6 @@
         <span>Blue-blind</span>
       </div>
     </label>
-
     <label class="vision-option">
       <input type="radio" name="vision" value="monochromacy" />
       <div class="vision-option-text">
@@ -366,14 +441,14 @@
     </label>
   </div>
 
-</div><!-- main -->
+</div>
 
 <!-- BOTTOM BAR -->
 <div class="bottom-bar">
   <div class="stat">
     <span class="stat-label">Contrast Ratio</span>
     <span class="stat-value" id="contrast-ratio">—</span>
-    <span id="ratio-badge" class="badge-fail">—</span>
+    <span id="ratio-badge" class="badge-aaa">AAA</span>
   </div>
   <div class="stat">
     <span class="stat-label">Background Luminance</span>
@@ -386,9 +461,11 @@
 </div>
 
 <script>
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+function toHex(r, g, b) {
+  return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('');
+}
 
 function toLinear(c) {
   const s = c / 255;
@@ -400,12 +477,10 @@ function luminance(r, g, b) {
 }
 
 function contrastRatio(l1, l2) {
-  const lighter = Math.max(l1, l2);
-  const darker  = Math.min(l1, l2);
-  return (lighter + 0.05) / (darker + 0.05);
+  const hi = Math.max(l1, l2), lo = Math.min(l1, l2);
+  return (hi + 0.05) / (lo + 0.05);
 }
 
-// Color-blindness simulation matrices (operate on linearized RGB)
 const matrices = {
   protanopia:   [[0.567,0.433,0.000],[0.558,0.442,0.000],[0.000,0.242,0.758]],
   deuteranopia: [[0.625,0.375,0.000],[0.700,0.300,0.000],[0.000,0.300,0.700]],
@@ -420,7 +495,6 @@ function applyMatrix(mat, rl, gl, bl) {
   ];
 }
 
-// Convert linear back to sRGB 0-255
 function fromLinear(c) {
   c = clamp(c, 0, 1);
   return Math.round(c <= 0.0031308 ? c * 12.92 * 255 : (1.055 * Math.pow(c, 1/2.4) - 0.055) * 255);
@@ -437,7 +511,30 @@ function simulateColor(r, g, b, mode) {
   return [fromLinear(nl), fromLinear(ml), fromLinear(ll)];
 }
 
-// ─── State ──────────────────────────────────────────────────────────────────
+// Update colored slider tracks dynamically
+function updateTrack(slider) {
+  const cls = [...slider.classList].find(c => c.endsWith('-track'));
+  if (!cls) return;
+  const pct = (slider.value / slider.max) * 100;
+  if (cls === 'r-track') slider.style.background = `linear-gradient(to right, #1e0a0a ${pct}%, #2a1a1a ${pct}%)`;
+  else if (cls === 'g-track') slider.style.background = `linear-gradient(to right, #0a1e0a ${pct}%, #1a2a1a ${pct}%)`;
+  else if (cls === 'b-track') slider.style.background = `linear-gradient(to right, #0a0a1e ${pct}%, #1a1a2a ${pct}%)`;
+  else if (cls === 'fs-track') slider.style.background = `linear-gradient(to right, #a78bfa ${pct}%, #1e1e36 ${pct}%)`;
+}
+
+// Use proper colored fill for each channel
+function setTrackFill(slider) {
+  const pct = (slider.value / slider.max) * 100;
+  const cls = [...slider.classList].find(c => c.endsWith('-track'));
+  if (cls === 'r-track')
+    slider.style.background = `linear-gradient(to right, #f87171 ${pct}%, #2a1010 ${pct}%)`;
+  else if (cls === 'g-track')
+    slider.style.background = `linear-gradient(to right, #4ade80 ${pct}%, #102a10 ${pct}%)`;
+  else if (cls === 'b-track')
+    slider.style.background = `linear-gradient(to right, #60a5fa ${pct}%, #10102a ${pct}%)`;
+  else if (cls === 'fs-track')
+    slider.style.background = `linear-gradient(to right, #a78bfa ${pct}%, #1e1e36 ${pct}%)`;
+}
 
 const state = {
   bg:  { r: 30,  g: 30,  b: 60  },
@@ -445,8 +542,6 @@ const state = {
   fontSize: 18,
   vision: 'normal',
 };
-
-// ─── DOM refs ───────────────────────────────────────────────────────────────
 
 const els = {
   bgR: document.getElementById('bg-r'),    bgRn: document.getElementById('bg-r-num'),
@@ -460,6 +555,8 @@ const els = {
   preview:   document.getElementById('preview-box'),
   bgSwatch:  document.getElementById('bg-swatch'),
   txtSwatch: document.getElementById('txt-swatch'),
+  bgHex:     document.getElementById('bg-hex'),
+  txtHex:    document.getElementById('txt-hex'),
   contrastR: document.getElementById('contrast-ratio'),
   ratioBadge:document.getElementById('ratio-badge'),
   bgLum:     document.getElementById('bg-lum'),
@@ -467,27 +564,21 @@ const els = {
   leftInner: document.getElementById('left-panel-inner'),
 };
 
-// ─── Render ─────────────────────────────────────────────────────────────────
-
 function render() {
   const { bg, txt, fontSize, vision } = state;
 
-  // Simulate colors for preview
   const [sr, sg, sb] = simulateColor(bg.r,  bg.g,  bg.b,  vision);
   const [tr, tg, tb] = simulateColor(txt.r, txt.g, txt.b, vision);
 
-  const bgCSS  = `rgb(${sr},${sg},${sb})`;
-  const txtCSS = `rgb(${tr},${tg},${tb})`;
-
-  els.preview.style.background = bgCSS;
-  els.preview.style.color      = txtCSS;
+  els.preview.style.background = `rgb(${sr},${sg},${sb})`;
+  els.preview.style.color      = `rgb(${tr},${tg},${tb})`;
   els.preview.style.fontSize   = fontSize + 'px';
 
-  // Swatches (show the real chosen colors, not simulated)
   els.bgSwatch.style.background  = `rgb(${bg.r},${bg.g},${bg.b})`;
   els.txtSwatch.style.background = `rgb(${txt.r},${txt.g},${txt.b})`;
+  els.bgHex.textContent  = toHex(bg.r, bg.g, bg.b);
+  els.txtHex.textContent = toHex(txt.r, txt.g, txt.b);
 
-  // Luminance & contrast on simulated colors
   const lBg  = luminance(sr, sg, sb);
   const lTxt = luminance(tr, tg, tb);
   const ratio = contrastRatio(lBg, lTxt);
@@ -496,21 +587,19 @@ function render() {
   els.txtLum.textContent = lTxt.toFixed(3);
   els.contrastR.textContent = ratio.toFixed(2) + ':1';
 
-  // WCAG badge
-  let badgeText, badgeClass;
-  if (ratio >= 7)        { badgeText = 'AAA';  badgeClass = 'badge-aaa'; }
-  else if (ratio >= 4.5) { badgeText = 'AA';   badgeClass = 'badge-aa';  }
-  else if (ratio >= 3)   { badgeText = 'AA Large'; badgeClass = 'badge-aa'; }
-  else                   { badgeText = 'Fail'; badgeClass = 'badge-fail'; }
-  els.ratioBadge.textContent = badgeText;
-  els.ratioBadge.className   = 'badge-fail'; // reset
-  els.ratioBadge.className   = badgeClass;
+  let badgeText, badgeClass, glowClass;
+  if (ratio >= 7)        { badgeText = 'AAA';      badgeClass = 'badge-aaa';  glowClass = 'glow-aaa'; }
+  else if (ratio >= 4.5) { badgeText = 'AA';       badgeClass = 'badge-aa';   glowClass = 'glow-aa';  }
+  else if (ratio >= 3)   { badgeText = 'AA Large'; badgeClass = 'badge-aa-lg';glowClass = 'glow-aa';  }
+  else                   { badgeText = 'Fail';     badgeClass = 'badge-fail'; glowClass = 'glow-fail';}
 
-  // Disable/enable left panel
+  els.ratioBadge.textContent = badgeText;
+  els.ratioBadge.className   = badgeClass;
+  els.preview.className      = glowClass;
+
   if (vision !== 'normal') {
     els.leftInner.classList.add('controls-disabled');
-    els.leftInner.setAttribute('data-disabled-msg', 'Controls disabled during color vision simulation');
-    // Actually disable inputs
+    els.leftInner.setAttribute('data-disabled-msg', 'Controls disabled during simulation');
     els.leftInner.querySelectorAll('input').forEach(i => i.disabled = true);
   } else {
     els.leftInner.classList.remove('controls-disabled');
@@ -519,21 +608,16 @@ function render() {
   }
 }
 
-// ─── Sync slider ↔ number ───────────────────────────────────────────────────
-
 function bindPair(slider, numInput, obj, key) {
-  slider.addEventListener('input', () => {
-    obj[key] = parseInt(slider.value, 10);
-    numInput.value = slider.value;
+  const update = (val) => {
+    obj[key] = val;
+    slider.value = val;
+    numInput.value = val;
+    setTrackFill(slider);
     render();
-  });
-  numInput.addEventListener('input', () => {
-    const v = clamp(parseInt(numInput.value, 10) || 0, 0, 255);
-    obj[key] = v;
-    numInput.value = v;
-    slider.value = v;
-    render();
-  });
+  };
+  slider.addEventListener('input', () => update(parseInt(slider.value, 10)));
+  numInput.addEventListener('input', () => update(clamp(parseInt(numInput.value, 10) || 0, 0, 255)));
 }
 
 bindPair(els.bgR, els.bgRn, state.bg, 'r');
@@ -546,10 +630,9 @@ bindPair(els.txB, els.txBn, state.txt, 'b');
 els.fontSize.addEventListener('input', () => {
   state.fontSize = parseInt(els.fontSize.value, 10);
   els.fontSizeV.textContent = state.fontSize + ' px';
+  setTrackFill(els.fontSize);
   render();
 });
-
-// ─── Vision radio buttons ────────────────────────────────────────────────────
 
 document.querySelectorAll('input[name="vision"]').forEach(radio => {
   radio.addEventListener('change', () => {
@@ -557,7 +640,8 @@ document.querySelectorAll('input[name="vision"]').forEach(radio => {
   });
 });
 
-// ─── Init ────────────────────────────────────────────────────────────────────
+// Init track fills
+document.querySelectorAll('input[type="range"]').forEach(setTrackFill);
 render();
 </script>
 </body>
