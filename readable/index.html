@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Readable Explorer</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Inter, system-ui, sans-serif;
+    background: #1a1a2e;
+    color: #c8cdd8;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    padding: 18px 24px 14px;
+    border-bottom: 1px solid #2e2e4a;
+    background: #16162a;
+  }
+  header h1 { font-size: 1.5rem; color: #7ec8e3; letter-spacing: 0.04em; }
+  header p  { font-size: 0.82rem; color: #6b7080; margin-top: 3px; }
+
+  /* Main grid */
+  .main {
+    display: grid;
+    grid-template-columns: 260px 1fr 210px;
+    flex: 1;
+    gap: 0;
+    min-height: 0;
+  }
+
+  /* Shared panel styles */
+  .panel {
+    padding: 20px 18px;
+    border-right: 1px solid #2e2e4a;
+    overflow-y: auto;
+  }
+  .panel:last-child { border-right: none; }
+
+  .panel-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #7ec8e3;
+    margin-bottom: 16px;
+  }
+
+  /* RGB control group */
+  .color-group { margin-bottom: 22px; }
+  .color-group-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #9ba3b2;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .color-swatch {
+    width: 18px; height: 18px;
+    border-radius: 4px;
+    border: 1px solid #3a3a5a;
+    flex-shrink: 0;
+  }
+
+  .rgb-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .rgb-row label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #7ec8e3;
+    width: 12px;
+    flex-shrink: 0;
+  }
+  .rgb-row input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 4px;
+    background: #2e2e4a;
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  .rgb-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #7ec8e3;
+    cursor: pointer;
+  }
+  .rgb-row input[type="number"] {
+    width: 52px;
+    padding: 3px 5px;
+    font-size: 0.75rem;
+    background: #0f0f20;
+    border: 1px solid #3a3a5a;
+    border-radius: 4px;
+    color: #c8cdd8;
+    text-align: center;
+    -moz-appearance: textfield;
+  }
+  .rgb-row input[type="number"]::-webkit-inner-spin-button,
+  .rgb-row input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+  /* Font size */
+  .font-size-group { margin-top: 6px; }
+  .font-size-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .font-size-row input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 4px;
+    background: #2e2e4a;
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  .font-size-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #7ec8e3;
+    cursor: pointer;
+  }
+  .font-size-val {
+    font-size: 0.75rem;
+    color: #9ba3b2;
+    width: 48px;
+    text-align: right;
+  }
+
+  /* Disabled overlay */
+  .controls-disabled {
+    position: relative;
+  }
+  .controls-disabled::after {
+    content: attr(data-disabled-msg);
+    position: absolute;
+    inset: 0;
+    background: rgba(26,26,46,0.82);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #7ec8e3;
+    padding: 12px;
+    border-radius: 6px;
+    pointer-events: all;
+  }
+  .left-panel-inner {
+    position: relative;
+  }
+
+  /* Preview area */
+  .preview-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 28px;
+  }
+  #preview-box {
+    width: 100%;
+    max-width: 580px;
+    min-height: 220px;
+    border-radius: 10px;
+    padding: 36px 40px;
+    border: 1px solid #2e2e4a;
+    transition: background 0.1s, color 0.1s;
+  }
+  #preview-box h2 {
+    margin-bottom: 14px;
+    font-weight: 700;
+  }
+  #preview-box p { line-height: 1.65; }
+
+  /* Right sidebar */
+  .right-panel { border-right: none; border-left: 1px solid #2e2e4a; }
+
+  .vision-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 9px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 4px;
+    transition: background 0.15s;
+  }
+  .vision-option:hover { background: #22223a; }
+  .vision-option input[type="radio"] {
+    margin-top: 2px;
+    accent-color: #7ec8e3;
+    flex-shrink: 0;
+  }
+  .vision-option-text { font-size: 0.8rem; }
+  .vision-option-text strong { display: block; color: #c8cdd8; }
+  .vision-option-text span { font-size: 0.7rem; color: #6b7080; }
+
+  /* Bottom bar */
+  .bottom-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    padding: 14px 28px;
+    border-top: 1px solid #2e2e4a;
+    background: #16162a;
+    flex-wrap: wrap;
+  }
+  .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .stat-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7080; }
+  .stat-value { font-size: 1.25rem; font-weight: 700; color: #7ec8e3; margin-top: 2px; }
+  #ratio-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 999px;
+    margin-top: 4px;
+    letter-spacing: 0.04em;
+  }
+  .badge-fail    { background: #5c1a1a; color: #f87171; }
+  .badge-aa      { background: #1a3a2e; color: #4ade80; }
+  .badge-aaa     { background: #1a2e1a; color: #86efac; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Readable Explorer</h1>
+  <p>Explore how color and size affect readability &amp; WCAG contrast</p>
+</header>
+
+<div class="main">
+
+  <!-- LEFT PANEL -->
+  <div class="panel" id="left-panel">
+    <div class="left-panel-inner" id="left-panel-inner">
+
+      <div class="panel-title">Background Color</div>
+      <div class="color-group" id="bg-group">
+        <div class="color-group-label">
+          <div class="color-swatch" id="bg-swatch"></div>
+          RGB Preview
+        </div>
+        <div class="rgb-row">
+          <label>R</label>
+          <input type="range" id="bg-r" min="0" max="255" value="30" />
+          <input type="number" id="bg-r-num" min="0" max="255" value="30" />
+        </div>
+        <div class="rgb-row">
+          <label>G</label>
+          <input type="range" id="bg-g" min="0" max="255" value="30" />
+          <input type="number" id="bg-g-num" min="0" max="255" value="30" />
+        </div>
+        <div class="rgb-row">
+          <label>B</label>
+          <input type="range" id="bg-b" min="0" max="255" value="60" />
+          <input type="number" id="bg-b-num" min="0" max="255" value="60" />
+        </div>
+      </div>
+
+      <div class="panel-title" style="margin-top:8px;">Text Color</div>
+      <div class="color-group" id="txt-group">
+        <div class="color-group-label">
+          <div class="color-swatch" id="txt-swatch"></div>
+          RGB Preview
+        </div>
+        <div class="rgb-row">
+          <label>R</label>
+          <input type="range" id="txt-r" min="0" max="255" value="220" />
+          <input type="number" id="txt-r-num" min="0" max="255" value="220" />
+        </div>
+        <div class="rgb-row">
+          <label>G</label>
+          <input type="range" id="txt-g" min="0" max="255" value="220" />
+          <input type="number" id="txt-g-num" min="0" max="255" value="220" />
+        </div>
+        <div class="rgb-row">
+          <label>B</label>
+          <input type="range" id="txt-b" min="0" max="255" value="240" />
+          <input type="number" id="txt-b-num" min="0" max="255" value="240" />
+        </div>
+      </div>
+
+      <div class="panel-title" style="margin-top:8px;">Font Size</div>
+      <div class="font-size-group">
+        <div class="font-size-row">
+          <input type="range" id="font-size" min="10" max="72" value="18" />
+          <span class="font-size-val" id="font-size-val">18 px</span>
+        </div>
+      </div>
+
+    </div><!-- left-panel-inner -->
+  </div><!-- left-panel -->
+
+  <!-- CENTER: PREVIEW -->
+  <div class="preview-panel">
+    <div id="preview-box">
+      <h2 id="preview-heading">The Quick Brown Fox</h2>
+      <p id="preview-body">Good design is accessible design. The contrast between text and its background directly affects how readable content is for all users, including those with visual impairments.</p>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="panel right-panel">
+    <div class="panel-title">Color Vision</div>
+
+    <label class="vision-option">
+      <input type="radio" name="vision" value="normal" checked />
+      <div class="vision-option-text">
+        <strong>Normal Vision</strong>
+        <span>Full color perception</span>
+      </div>
+    </label>
+
+    <label class="vision-option">
+      <input type="radio" name="vision" value="protanopia" />
+      <div class="vision-option-text">
+        <strong>Protanopia</strong>
+        <span>Red-blind</span>
+      </div>
+    </label>
+
+    <label class="vision-option">
+      <input type="radio" name="vision" value="deuteranopia" />
+      <div class="vision-option-text">
+        <strong>Deuteranopia</strong>
+        <span>Green-blind</span>
+      </div>
+    </label>
+
+    <label class="vision-option">
+      <input type="radio" name="vision" value="tritanopia" />
+      <div class="vision-option-text">
+        <strong>Tritanopia</strong>
+        <span>Blue-blind</span>
+      </div>
+    </label>
+
+    <label class="vision-option">
+      <input type="radio" name="vision" value="monochromacy" />
+      <div class="vision-option-text">
+        <strong>Monochromacy</strong>
+        <span>Complete color blindness</span>
+      </div>
+    </label>
+  </div>
+
+</div><!-- main -->
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <div class="stat">
+    <span class="stat-label">Contrast Ratio</span>
+    <span class="stat-value" id="contrast-ratio">—</span>
+    <span id="ratio-badge" class="badge-fail">—</span>
+  </div>
+  <div class="stat">
+    <span class="stat-label">Background Luminance</span>
+    <span class="stat-value" id="bg-lum">—</span>
+  </div>
+  <div class="stat">
+    <span class="stat-label">Text Luminance</span>
+    <span class="stat-value" id="txt-lum">—</span>
+  </div>
+</div>
+
+<script>
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+function toLinear(c) {
+  const s = c / 255;
+  return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+}
+
+function luminance(r, g, b) {
+  return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+}
+
+function contrastRatio(l1, l2) {
+  const lighter = Math.max(l1, l2);
+  const darker  = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+// Color-blindness simulation matrices (operate on linearized RGB)
+const matrices = {
+  protanopia:   [[0.567,0.433,0.000],[0.558,0.442,0.000],[0.000,0.242,0.758]],
+  deuteranopia: [[0.625,0.375,0.000],[0.700,0.300,0.000],[0.000,0.300,0.700]],
+  tritanopia:   [[0.950,0.050,0.000],[0.000,0.433,0.567],[0.000,0.475,0.525]],
+};
+
+function applyMatrix(mat, rl, gl, bl) {
+  return [
+    mat[0][0]*rl + mat[0][1]*gl + mat[0][2]*bl,
+    mat[1][0]*rl + mat[1][1]*gl + mat[1][2]*bl,
+    mat[2][0]*rl + mat[2][1]*gl + mat[2][2]*bl,
+  ];
+}
+
+// Convert linear back to sRGB 0-255
+function fromLinear(c) {
+  c = clamp(c, 0, 1);
+  return Math.round(c <= 0.0031308 ? c * 12.92 * 255 : (1.055 * Math.pow(c, 1/2.4) - 0.055) * 255);
+}
+
+function simulateColor(r, g, b, mode) {
+  if (mode === 'normal') return [r, g, b];
+  const rl = toLinear(r), gl = toLinear(g), bl = toLinear(b);
+  if (mode === 'monochromacy') {
+    const gray = 0.2126*rl + 0.7152*gl + 0.0722*bl;
+    return [fromLinear(gray), fromLinear(gray), fromLinear(gray)];
+  }
+  const [nl, ml, ll] = applyMatrix(matrices[mode], rl, gl, bl);
+  return [fromLinear(nl), fromLinear(ml), fromLinear(ll)];
+}
+
+// ─── State ──────────────────────────────────────────────────────────────────
+
+const state = {
+  bg:  { r: 30,  g: 30,  b: 60  },
+  txt: { r: 220, g: 220, b: 240 },
+  fontSize: 18,
+  vision: 'normal',
+};
+
+// ─── DOM refs ───────────────────────────────────────────────────────────────
+
+const els = {
+  bgR: document.getElementById('bg-r'),    bgRn: document.getElementById('bg-r-num'),
+  bgG: document.getElementById('bg-g'),    bgGn: document.getElementById('bg-g-num'),
+  bgB: document.getElementById('bg-b'),    bgBn: document.getElementById('bg-b-num'),
+  txR: document.getElementById('txt-r'),   txRn: document.getElementById('txt-r-num'),
+  txG: document.getElementById('txt-g'),   txGn: document.getElementById('txt-g-num'),
+  txB: document.getElementById('txt-b'),   txBn: document.getElementById('txt-b-num'),
+  fontSize:  document.getElementById('font-size'),
+  fontSizeV: document.getElementById('font-size-val'),
+  preview:   document.getElementById('preview-box'),
+  bgSwatch:  document.getElementById('bg-swatch'),
+  txtSwatch: document.getElementById('txt-swatch'),
+  contrastR: document.getElementById('contrast-ratio'),
+  ratioBadge:document.getElementById('ratio-badge'),
+  bgLum:     document.getElementById('bg-lum'),
+  txtLum:    document.getElementById('txt-lum'),
+  leftInner: document.getElementById('left-panel-inner'),
+};
+
+// ─── Render ─────────────────────────────────────────────────────────────────
+
+function render() {
+  const { bg, txt, fontSize, vision } = state;
+
+  // Simulate colors for preview
+  const [sr, sg, sb] = simulateColor(bg.r,  bg.g,  bg.b,  vision);
+  const [tr, tg, tb] = simulateColor(txt.r, txt.g, txt.b, vision);
+
+  const bgCSS  = `rgb(${sr},${sg},${sb})`;
+  const txtCSS = `rgb(${tr},${tg},${tb})`;
+
+  els.preview.style.background = bgCSS;
+  els.preview.style.color      = txtCSS;
+  els.preview.style.fontSize   = fontSize + 'px';
+
+  // Swatches (show the real chosen colors, not simulated)
+  els.bgSwatch.style.background  = `rgb(${bg.r},${bg.g},${bg.b})`;
+  els.txtSwatch.style.background = `rgb(${txt.r},${txt.g},${txt.b})`;
+
+  // Luminance & contrast on simulated colors
+  const lBg  = luminance(sr, sg, sb);
+  const lTxt = luminance(tr, tg, tb);
+  const ratio = contrastRatio(lBg, lTxt);
+
+  els.bgLum.textContent  = lBg.toFixed(3);
+  els.txtLum.textContent = lTxt.toFixed(3);
+  els.contrastR.textContent = ratio.toFixed(2) + ':1';
+
+  // WCAG badge
+  let badgeText, badgeClass;
+  if (ratio >= 7)        { badgeText = 'AAA';  badgeClass = 'badge-aaa'; }
+  else if (ratio >= 4.5) { badgeText = 'AA';   badgeClass = 'badge-aa';  }
+  else if (ratio >= 3)   { badgeText = 'AA Large'; badgeClass = 'badge-aa'; }
+  else                   { badgeText = 'Fail'; badgeClass = 'badge-fail'; }
+  els.ratioBadge.textContent = badgeText;
+  els.ratioBadge.className   = 'badge-fail'; // reset
+  els.ratioBadge.className   = badgeClass;
+
+  // Disable/enable left panel
+  if (vision !== 'normal') {
+    els.leftInner.classList.add('controls-disabled');
+    els.leftInner.setAttribute('data-disabled-msg', 'Controls disabled during color vision simulation');
+    // Actually disable inputs
+    els.leftInner.querySelectorAll('input').forEach(i => i.disabled = true);
+  } else {
+    els.leftInner.classList.remove('controls-disabled');
+    els.leftInner.removeAttribute('data-disabled-msg');
+    els.leftInner.querySelectorAll('input').forEach(i => i.disabled = false);
+  }
+}
+
+// ─── Sync slider ↔ number ───────────────────────────────────────────────────
+
+function bindPair(slider, numInput, obj, key) {
+  slider.addEventListener('input', () => {
+    obj[key] = parseInt(slider.value, 10);
+    numInput.value = slider.value;
+    render();
+  });
+  numInput.addEventListener('input', () => {
+    const v = clamp(parseInt(numInput.value, 10) || 0, 0, 255);
+    obj[key] = v;
+    numInput.value = v;
+    slider.value = v;
+    render();
+  });
+}
+
+bindPair(els.bgR, els.bgRn, state.bg, 'r');
+bindPair(els.bgG, els.bgGn, state.bg, 'g');
+bindPair(els.bgB, els.bgBn, state.bg, 'b');
+bindPair(els.txR, els.txRn, state.txt, 'r');
+bindPair(els.txG, els.txGn, state.txt, 'g');
+bindPair(els.txB, els.txBn, state.txt, 'b');
+
+els.fontSize.addEventListener('input', () => {
+  state.fontSize = parseInt(els.fontSize.value, 10);
+  els.fontSizeV.textContent = state.fontSize + ' px';
+  render();
+});
+
+// ─── Vision radio buttons ────────────────────────────────────────────────────
+
+document.querySelectorAll('input[name="vision"]').forEach(radio => {
+  radio.addEventListener('change', () => {
+    if (radio.checked) { state.vision = radio.value; render(); }
+  });
+});
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
