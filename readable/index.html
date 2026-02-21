@@ -320,6 +320,44 @@
   .glow-fail { box-shadow: 0 8px 48px rgba(239,68,68,0.15), 0 2px 16px rgba(0,0,0,0.6); }
   .glow-aa   { box-shadow: 0 8px 48px rgba(74,222,128,0.12), 0 2px 16px rgba(0,0,0,0.6); }
   .glow-aaa  { box-shadow: 0 8px 48px rgba(167,139,250,0.14), 0 2px 16px rgba(0,0,0,0.6); }
+
+  /* ── WCAG compliance badges ── */
+  .wcag-badges {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .wcag-badge {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 10px;
+    border-radius: 7px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    border: 1px solid transparent;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .wcag-badge .badge-type {
+    font-weight: 500;
+    font-size: 0.62rem;
+    opacity: 0.8;
+  }
+  .wcag-badge.pass {
+    background: rgba(74,222,128,0.15);
+    color: #4ade80;
+    border-color: rgba(74,222,128,0.3);
+  }
+  .wcag-badge.fail {
+    background: rgba(239,68,68,0.12);
+    color: #f87171;
+    border-color: rgba(239,68,68,0.25);
+  }
+  .wcag-badge.dimmed {
+    opacity: 0.35;
+    transform: scale(0.96);
+  }
 </style>
 </head>
 <body>
@@ -458,6 +496,17 @@
     <span class="stat-label">Text Luminance</span>
     <span class="stat-value" id="txt-lum">—</span>
   </div>
+  <div class="stat">
+    <span class="stat-label">WCAG Compliance</span>
+    <div class="wcag-badges">
+      <div class="wcag-badge pass" id="badge-normal">
+        <span>✓ PASS</span><span class="badge-type">Normal Text</span>
+      </div>
+      <div class="wcag-badge fail" id="badge-large">
+        <span>✗ FAIL</span><span class="badge-type">Large Text</span>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -557,11 +606,13 @@ const els = {
   txtSwatch: document.getElementById('txt-swatch'),
   bgHex:     document.getElementById('bg-hex'),
   txtHex:    document.getElementById('txt-hex'),
-  contrastR: document.getElementById('contrast-ratio'),
-  ratioBadge:document.getElementById('ratio-badge'),
-  bgLum:     document.getElementById('bg-lum'),
-  txtLum:    document.getElementById('txt-lum'),
-  leftInner: document.getElementById('left-panel-inner'),
+  contrastR:   document.getElementById('contrast-ratio'),
+  ratioBadge:  document.getElementById('ratio-badge'),
+  bgLum:       document.getElementById('bg-lum'),
+  txtLum:      document.getElementById('txt-lum'),
+  badgeNormal: document.getElementById('badge-normal'),
+  badgeLarge:  document.getElementById('badge-large'),
+  leftInner:   document.getElementById('left-panel-inner'),
 };
 
 function render() {
@@ -596,6 +647,18 @@ function render() {
   els.ratioBadge.textContent = badgeText;
   els.ratioBadge.className   = badgeClass;
   els.preview.className      = glowClass;
+
+  // WCAG pass/fail badges
+  const isLarge = fontSize >= 24;
+  const normalPass = ratio >= 4.5;
+  const largePass  = ratio >= 3;
+
+  function setBadge(el, pass, active) {
+    el.className = 'wcag-badge ' + (pass ? 'pass' : 'fail') + (active ? '' : ' dimmed');
+    el.querySelector('span').textContent = pass ? '✓ PASS' : '✗ FAIL';
+  }
+  setBadge(els.badgeNormal, normalPass, !isLarge);
+  setBadge(els.badgeLarge,  largePass,  isLarge);
 
   if (vision !== 'normal') {
     els.leftInner.classList.add('controls-disabled');
