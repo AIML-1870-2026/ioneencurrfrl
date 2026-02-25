@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blackjack Game — Design Specification</title>
+<style>
+  :root {
+    --bg: #0d0d1a;
+    --surface: #1a1028;
+    --accent: #c084fc;
+    --accent2: #7dd3fc;
+    --accent3: #f9a8d4;
+    --text: #f5f0ff;
+    --text-muted: #9d8faa;
+    --success: #6ee7b7;
+    --danger: #e879a0;
+    --border: #2d2045;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif;
+    line-height: 1.7;
+    padding: 2rem 1rem;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 2.2rem;
+    color: var(--accent);
+    text-shadow: 0 0 20px #c084fc66;
+    margin-bottom: 0.25rem;
+    letter-spacing: 0.04em;
+  }
+
+  h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.3rem;
+    color: var(--accent2);
+    margin: 2.5rem 0 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border);
+    letter-spacing: 0.03em;
+  }
+
+  h3 {
+    font-size: 1rem;
+    color: var(--accent3);
+    margin: 1.5rem 0 0.5rem;
+    font-weight: 600;
+  }
+
+  p { margin: 0.5rem 0; color: var(--text); }
+
+  ul, ol {
+    margin: 0.5rem 0 0.5rem 1.5rem;
+  }
+
+  li { margin: 0.3rem 0; }
+
+  strong { color: var(--accent); font-weight: 600; }
+
+  code {
+    background: #1e1535;
+    color: var(--accent2);
+    padding: 0.1em 0.4em;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+  }
+
+  pre {
+    background: #13131f;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    overflow-x: auto;
+    margin: 0.75rem 0;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.75rem 0;
+    font-size: 0.95rem;
+  }
+
+  th {
+    background: var(--surface);
+    color: var(--accent);
+    padding: 0.6rem 1rem;
+    text-align: left;
+    border: 1px solid var(--border);
+    font-weight: 600;
+  }
+
+  td {
+    padding: 0.55rem 1rem;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  tr:nth-child(even) td { background: #0f0f1e; }
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2.5rem 0;
+  }
+
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+  }
+
+  .suit-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin: 0.5rem 0;
+  }
+
+  .suit-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    border: 1px solid currentColor;
+  }
+
+  .suit-stars  { color: #c084fc; background: #c084fc18; }
+  .suit-hearts { color: #f9a8d4; background: #f9a8d418; }
+  .suit-gems   { color: #7dd3fc; background: #7dd3fc18; }
+  .suit-shoes  { color: #6ee7b7; background: #6ee7b718; }
+
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;600&display=swap');
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>Blackjack Game</h1>
+  <p class="subtitle">Design Specification</p>
+
+  <!-- Visual Design -->
+  <h2>Visual Design</h2>
+
+  <h3>Color Palette</h3>
+  <ul>
+    <li><strong>Background:</strong> Deep charcoal / near-black (<code>#0d0d1a</code>, <code>#13131f</code>)</li>
+    <li><strong>Table surface:</strong> Deep twilight purple (<code>#1a1028</code>)</li>
+    <li><strong>Accent / highlight:</strong> Soft lavender (<code>#c084fc</code>); sky blue (<code>#7dd3fc</code>); rose pink (<code>#f9a8d4</code>)</li>
+    <li><strong>Text (primary):</strong> Off-white (<code>#f5f0ff</code>) with a faint lavender tint</li>
+    <li><strong>Text (secondary):</strong> Muted lavender-gray (<code>#9d8faa</code>)</li>
+    <li><strong>Button hover states:</strong> Glowing lavender or pink halo (box-shadow)</li>
+    <li><strong>Danger / loss:</strong> Soft rose / magenta (<code>#e879a0</code>)</li>
+    <li><strong>Success / win:</strong> Mint green (<code>#6ee7b7</code>) or bright lavender</li>
+  </ul>
+
+  <h3>Typography</h3>
+  <ul>
+    <li><strong>Headings / score displays:</strong> <code>'Cinzel'</code> or <code>'Raleway'</code> — elegant and slightly magical</li>
+    <li><strong>Body / buttons:</strong> Clean sans-serif (<code>'Inter'</code> or system-ui)</li>
+    <li>Suit symbols use custom pony-inspired icons rather than standard Unicode suits</li>
+  </ul>
+
+  <h3>Card Style — Pony-Inspired (Original Design, No IP)</h3>
+  <p>Cards have a dark (<code>#1e1535</code>) face with pastel-colored suit symbols and rank text. Four custom suits:</p>
+  <div class="suit-row">
+    <span class="suit-badge suit-stars">★ Stars — lavender (replaces spades)</span>
+    <span class="suit-badge suit-hearts">♥ Hearts — rose pink</span>
+    <span class="suit-badge suit-gems">✦ Gems / Crystals — sky blue (replaces diamonds)</span>
+    <span class="suit-badge suit-shoes">⁂ Horseshoes — mint green (replaces clubs)</span>
+  </div>
+  <ul>
+    <li>Card backs: sparkle / starfield pattern in deep purple with scattered pastel stars (inline SVG or CSS)</li>
+    <li>Cards have a soft glowing border in their suit color, plus a slight drop shadow</li>
+  </ul>
+
+  <h3>Overall Aesthetic</h3>
+  <ul>
+    <li>"Enchanted casino" — dark and sophisticated with a whimsical, magical spark</li>
+    <li>Pastel glows and starfield textures against deep dark backgrounds</li>
+    <li>Playful but not childish — think premium magical night sky</li>
+    <li>No MLP characters, logos, or trademarked imagery anywhere</li>
+    <li>Subtle sparkle/shimmer CSS animation on win states</li>
+  </ul>
+
+  <hr>
+
+  <!-- Layout -->
+  <h2>Layout</h2>
+
+  <h3>Desktop Layout (≥ 768px)</h3>
+<pre>
+┌──────────────────────────────────────────┐
+│  BLACKJACK             Balance: $1,000   │  ← Header bar
+├──────────────────────────────────────────┤
+│         DEALER  (score: ?)               │
+│         [ card ] [ card-back ]           │  ← Dealer area
+├──────────────────────────────────────────┤
+│                                          │
+│         PLAYER  (score: 14)              │
+│         [ card ] [ card ]                │  ← Player area
+│                                          │
+├──────────────────────────────────────────┤
+│  Bet: $50   [ -10 ] [ -5 ] [ +5 ] [+10] │  ← Bet controls
+│             [ Deal ]                     │
+├──────────────────────────────────────────┤
+│  [ Hit ]  [ Stand ]  [ Double ]          │  ← Action buttons
+│  [ Split ]  [ Insurance ]                │
+└──────────────────────────────────────────┘
+</pre>
+
+  <h3>Mobile Layout (&lt; 768px)</h3>
+  <ul>
+    <li>Single-column, stacked vertically</li>
+    <li>Cards scale down; smaller font sizes</li>
+    <li>Bet adjustment buttons stay full-width row</li>
+    <li>Action buttons in a 2×2 or 2×3 grid</li>
+  </ul>
+
+  <hr>
+
+  <!-- Game States -->
+  <h2>Game States</h2>
+
+  <h3>1. BETTING State</h3>
+  <ul>
+    <li>Bet adjustment buttons (<code>-50</code>, <code>-10</code>, <code>-5</code>, <code>+5</code>, <code>+10</code>, <code>+50</code>) are enabled</li>
+    <li>Current bet displayed in large gold text</li>
+    <li><strong>Deal</strong> button enabled only if bet &gt; 0 and balance ≥ bet</li>
+    <li>Action buttons (Hit, Stand, Double, Split, Insurance) are <strong>hidden or disabled</strong></li>
+    <li>Player balance displayed prominently</li>
+  </ul>
+
+  <h3>2. PLAYING State</h3>
+  <ul>
+    <li>Bet adjustment buttons are <strong>disabled</strong> (bet locked in)</li>
+    <li>Deal button is <strong>hidden or disabled</strong></li>
+    <li>Action buttons shown based on legality:
+      <ul>
+        <li><strong>Hit</strong> — always available while &lt; 21</li>
+        <li><strong>Stand</strong> — always available</li>
+        <li><strong>Double Down</strong> — only on first two cards AND sufficient balance</li>
+        <li><strong>Split</strong> — only when first two cards have equal value AND sufficient balance</li>
+        <li><strong>Insurance</strong> — only when dealer's up-card is an Ace; offered once; disappears after player decides</li>
+      </ul>
+    </li>
+    <li>Dealer's hole card shown face-down</li>
+  </ul>
+
+  <h3>3. ROUND COMPLETE State</h3>
+  <ul>
+    <li>All action buttons <strong>disabled</strong></li>
+    <li>Dealer's hole card revealed; dealer plays out hand</li>
+    <li>Outcome message displayed clearly (e.g. "Blackjack! You win $75", "Push — Bet returned", "Bust! You lose $50")</li>
+    <li><strong>New Round / Deal Again</strong> button appears prominently</li>
+    <li>If balance = $0, offer a "Rebuy" option to reset to $1,000</li>
+  </ul>
+
+  <hr>
+
+  <!-- Blackjack Rules -->
+  <h2>Blackjack Rules</h2>
+
+  <h3>Deck</h3>
+  <ul>
+    <li>Standard single 52-card deck</li>
+    <li>Shuffled at the start of each round (or when deck is exhausted)</li>
+    <li>Fisher-Yates shuffle algorithm for fairness</li>
+  </ul>
+
+  <h3>Card Values</h3>
+  <ul>
+    <li>Number cards (2–10): face value</li>
+    <li>Face cards (J, Q, K): 10</li>
+    <li>Ace: 11, reduced to 1 if hand would bust</li>
+  </ul>
+
+  <h3>Deal</h3>
+  <ul>
+    <li>Player receives 2 cards face-up</li>
+    <li>Dealer receives 1 card face-up, 1 card face-down (hole card)</li>
+  </ul>
+
+  <h3>Player Actions</h3>
+  <ul>
+    <li><strong>Hit:</strong> Draw one card; if total &gt; 21, player busts</li>
+    <li><strong>Stand:</strong> End turn; dealer plays out</li>
+    <li><strong>Double Down:</strong> Double the bet, receive exactly one more card, then stand</li>
+    <li><strong>Split:</strong> Two equal-value cards split into two hands; each gets one additional card; original bet applies to each; re-splitting <em>not</em> supported</li>
+    <li><strong>Insurance:</strong> Offered when dealer shows an Ace; costs half the original bet; pays 2:1 if dealer has blackjack</li>
+  </ul>
+
+  <h3>Dealer Rules</h3>
+  <ul>
+    <li>Dealer must hit on soft 16 and below</li>
+    <li>Dealer must stand on soft 17 and above</li>
+    <li>Hole card revealed after player stands or busts</li>
+  </ul>
+
+  <h3>Payouts</h3>
+  <table>
+    <thead>
+      <tr><th>Outcome</th><th>Payout</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Player blackjack (no dealer blackjack)</td><td>1.5× bet (pays 3:2)</td></tr>
+      <tr><td>Player wins normally</td><td>1× bet</td></tr>
+      <tr><td>Push (tie)</td><td>Bet returned</td></tr>
+      <tr><td>Player loses</td><td>Bet forfeited</td></tr>
+      <tr><td>Insurance win</td><td>2:1 on insurance bet</td></tr>
+      <tr><td>Insurance loss</td><td>Insurance bet forfeited</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Natural Blackjack Edge Cases</h3>
+  <ul>
+    <li><strong>Player blackjack, dealer no blackjack:</strong> Player wins 1.5× immediately</li>
+    <li><strong>Both have blackjack:</strong> Push — bet returned</li>
+    <li><strong>Dealer blackjack, player no blackjack:</strong> Player loses bet (insurance pays if taken)</li>
+    <li>A blackjack is <em>only</em> an Ace + 10-value card on the initial two-card deal; a 21 by hitting is not a blackjack</li>
+  </ul>
+
+  <hr>
+
+  <!-- Animations -->
+  <h2>Animations &amp; Transitions</h2>
+  <ul>
+    <li><strong>Card deal:</strong> Cards slide in from deck position (CSS translate + opacity, ~300ms each, staggered 150ms)</li>
+    <li><strong>Card flip:</strong> Dealer hole card flips back-to-front (CSS 3D rotateY, ~400ms)</li>
+    <li><strong>Bust / win:</strong> Shake animation on bust; glow/pulse on win</li>
+    <li><strong>Button interactions:</strong> Subtle scale-down on press (<code>transform: scale(0.96)</code>)</li>
+    <li>All animations respect <code>prefers-reduced-motion</code> — disabled if user has set this preference</li>
+  </ul>
+
+  <hr>
+
+  <!-- Testing -->
+  <h2>Testing Scenarios</h2>
+
+  <h3>Required (from assignment)</h3>
+  <ol>
+    <li><strong>Player blackjack, dealer no blackjack</strong> — payout must be exactly 1.5× bet (e.g. bet $100 → win $150)</li>
+    <li><strong>Both player and dealer blackjack</strong> — result is a push; bet returned, balance unchanged</li>
+  </ol>
+
+  <h3>Additional Correctness Tests</h3>
+  <ol start="3">
+    <li><strong>Player bust</strong> — hitting to &gt;21 immediately ends round as a loss</li>
+    <li><strong>Dealer bust</strong> — dealer &gt;21 means player wins (if not already bust)</li>
+    <li><strong>Push at 21 (non-blackjack)</strong> — both reach 21 over multiple cards → push</li>
+    <li><strong>Soft ace handling</strong> — [A, 6, 8] → should total 15, not bust</li>
+    <li><strong>Double down</strong> — bet doubles, exactly one card dealt, cannot hit again</li>
+    <li><strong>Split</strong> — two equal cards → two playable hands, each with original bet</li>
+    <li><strong>Insurance — dealer has blackjack</strong> — insurance pays 2:1, main bet lost</li>
+    <li><strong>Insurance — dealer no blackjack</strong> — insurance lost, round continues normally</li>
+    <li><strong>Balance enforcement</strong> — cannot bet more than balance; double/split disabled if insufficient funds</li>
+    <li><strong>Deck completeness</strong> — all 52 cards present, no duplicates</li>
+  </ol>
+
+  <hr>
+
+  <!-- Implementation Notes -->
+  <h2>Implementation Notes</h2>
+  <ul>
+    <li>Deliver as a <strong>single self-contained HTML file</strong> (HTML + CSS + JS inline)</li>
+    <li>Cards rendered via HTML/CSS/SVG — no external image assets; each card is a styled <code>div</code> with rank text and custom suit symbol</li>
+    <li>Suit color map: Stars → <code>#c084fc</code>, Hearts → <code>#f9a8d4</code>, Gems → <code>#7dd3fc</code>, Horseshoes → <code>#6ee7b7</code></li>
+    <li>No external frameworks — vanilla JS only</li>
+    <li>Use CSS custom properties (variables) for the color palette</li>
+    <li>Store game state in a plain JS object (no localStorage required)</li>
+    <li>All button enabled/disabled states enforced in JS, not just visually hidden</li>
+    <li>Code should be readable and commented for each major section (deal, evaluate hand, payout, etc.)</li>
+  </ul>
+
+</div>
+</body>
+</html>
