@@ -640,6 +640,21 @@ window.UI = (function () {
   function _drawStartScreen(ctx) {
     var bx = 20, by = 15, bw = 760, bh = 570;
 
+    // Floating food emojis (drift upward behind the panel)
+    if (window._floatingFoods) {
+      ctx.save();
+      ctx.globalAlpha = 0.13;
+      ctx.font = '28px sans-serif';
+      window._floatingFoods.forEach(function (ff) {
+        ff.y += ff.vy;
+        ff.x += Math.sin(_time * 0.02 + ff.wobble) * 0.4;
+        if (ff.y < -30) ff.y = 630;
+        ctx.textAlign = 'center';
+        ctx.fillText(ff.icon, ff.x, ff.y);
+      });
+      ctx.restore();
+    }
+
     // Animated background shimmer behind panel
     var bgPulse = 0.5 + 0.5 * Math.sin(_time * 0.025);
     var bgG = ctx.createRadialGradient(400, 300, 60, 400, 300, 420);
@@ -828,29 +843,103 @@ window.UI = (function () {
   }
 
   function _drawWinScreen(ctx) {
-    var bx = 190, by = 150, bw = 420, bh = 295, cx = bx + bw / 2;
-    _drawOverlay(ctx); _drawPanel(ctx, bx, by, bw, bh);
+    var W = GameState.width, H = GameState.height;
+    var bx = 148, by = 78, bw = 504, bh = 440, cx = bx + bw / 2;
+
+    // Cinematic overlay
+    var greenPulse = 0.06 + 0.04 * Math.sin(_time * 0.04);
+    ctx.fillStyle = 'rgba(0,0,0,0.80)'; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(0,100,40,' + greenPulse + ')'; ctx.fillRect(0, 0, W, H);
+    _drawPanel(ctx, bx, by, bw, bh);
     ctx.textAlign = 'center';
-    ctx.shadowColor = '#00ff88'; ctx.shadowBlur = 18;
-    ctx.fillStyle = '#33cc66'; ctx.font = 'bold 30px serif';
-    ctx.fillText('ESCAPED.', cx, by + 52); ctx.shadowBlur = 0;
-    ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(bx + 30, by + 64, bw - 60, 1);
-    ctx.fillStyle = '#aaaaaa'; ctx.font = '14px sans-serif';
-    ctx.fillText('Round ' + GameState.round + ' complete.', cx, by + 86);
-    // Lives remaining
-    ctx.fillStyle = '#ff5555'; ctx.font = '13px sans-serif';
+
+    // ── Title ──────────────────────────────────────────────────────────────
+    var glow = 0.7 + 0.3 * Math.sin(_time * 0.06);
+    ctx.shadowColor = '#00ff88'; ctx.shadowBlur = 22 * glow;
+    ctx.fillStyle = '#44ff88'; ctx.font = 'bold 42px serif';
+    ctx.fillText('ESCAPED!', cx, by + 50); ctx.shadowBlur = 0;
+    ctx.fillStyle = 'rgba(120,200,150,0.75)'; ctx.font = 'italic 13px serif';
+    ctx.fillText('Round ' + GameState.round + ' complete — you made it out.', cx, by + 72);
+
+    ctx.strokeStyle = 'rgba(0,255,100,0.15)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(bx + 40, by + 84); ctx.lineTo(bx + bw - 40, by + 84); ctx.stroke();
+
+    // ── Stealth Rating ─────────────────────────────────────────────────────
+    var st = window._winStats || { maxDet: 0, caught: 0, newBest: false };
+    var grade, gradeColor, gradeName;
+    if      (st.caught >= 2)    { grade = 'D'; gradeColor = '#cc3300'; gradeName = 'Close Call';  }
+    else if (st.caught >= 1)    { grade = 'C'; gradeColor = '#ff8800'; gradeName = 'Spotted';     }
+    else if (st.maxDet <= 20)   { grade = 'S'; gradeColor = '#ffdd00'; gradeName = 'Shadow Walk'; }
+    else if (st.maxDet <= 50)   { grade = 'A'; gradeColor = '#44cc44'; gradeName = 'Clean Run';   }
+    else if (st.maxDet <= 75)   { grade = 'B'; gradeColor = '#4488ff'; gradeName = 'Close Shave'; }
+    else                        { grade = 'C'; gradeColor = '#ff8800'; gradeName = 'Spotted';     }
+    var ghostMode = st.maxDet <= 10 && st.caught === 0;
     var lv = GameState.lives != null ? GameState.lives : 3;
-    ctx.fillText('Lives remaining: ' + '♥'.repeat(lv), cx, by + 108);
-    ctx.fillStyle = '#dddddd'; ctx.font = '14px sans-serif';
-    ctx.fillText('Food stolen: ' + GameState.player.inventory.length + ' item(s)', cx, by + 136);
-    ctx.font = 'bold 18px sans-serif';
-    ctx.fillText('Score: ' + GameState.score + ' pts', cx, by + 162);
-    if (GameState.highScore > 0) {
-      ctx.fillStyle = '#ffcc00'; ctx.font = '13px sans-serif';
-      ctx.fillText('Best: ' + GameState.highScore + ' pts', cx, by + 186);
+
+    // Grade box
+    var gx = bx + 50, gy = by + 96;
+    ctx.shadowColor = gradeColor; ctx.shadowBlur = 18;
+    ctx.fillStyle = gradeColor; ctx.font = 'bold 72px serif'; ctx.textAlign = 'center';
+    ctx.fillText(grade, gx + 28, gy + 62); ctx.shadowBlur = 0;
+    ctx.strokeStyle = gradeColor; ctx.lineWidth = 2;
+    ctx.strokeRect(gx, gy, 56, 72);
+
+    // Rating info
+    ctx.textAlign = 'left';
+    ctx.fillStyle = gradeColor; ctx.font = 'bold 18px sans-serif';
+    ctx.fillText(gradeName, gx + 76, gy + 24);
+    ctx.fillStyle = 'rgba(200,200,200,0.55)'; ctx.font = '11px monospace';
+    ctx.fillText('STEALTH RATING', gx + 76, gy + 42);
+    ctx.fillStyle = '#ff6666'; ctx.font = '13px sans-serif';
+    var hearts = lv > 0 ? '♥'.repeat(lv) : 'none';
+    ctx.fillText('Lives left: ' + hearts, gx + 76, gy + 60);
+
+    // Ghost mode badge
+    if (ghostMode) {
+      var gbx = gx + 76, gby2 = gy + 68, gbw = 142, gbh = 20;
+      ctx.fillStyle = 'rgba(0,255,180,0.12)'; _rr(ctx, gbx, gby2, gbw, gbh, 4); ctx.fill();
+      ctx.strokeStyle = 'rgba(0,255,180,0.45)'; ctx.lineWidth = 1; _rr(ctx, gbx, gby2, gbw, gbh, 4); ctx.stroke();
+      ctx.fillStyle = '#00ffcc'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('👻  GHOST MODE', gbx + gbw / 2, gby2 + 13);
     }
-    _drawButton(ctx, cx - 85, by + 208, 170, 42, '▶  NEXT ROUND', '#1a5e2a', function () {
+
+    // ── Stats ──────────────────────────────────────────────────────────────
+    ctx.textAlign = 'left';
+    var spy = by + 190, spx = bx + 40, spw = bw - 80;
+    ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(bx + 40, spy - 6); ctx.lineTo(bx + bw - 40, spy - 6); ctx.stroke();
+
+    function winStat(label, value, y, hl) {
+      ctx.fillStyle = hl ? '#ffcc44' : '#556677'; ctx.font = '12px monospace'; ctx.textAlign = 'left';
+      ctx.fillText(label, spx, y);
+      ctx.fillStyle = hl ? '#ffee66' : '#cce0dd'; ctx.font = hl ? 'bold 13px monospace' : '12px monospace';
+      ctx.textAlign = 'right'; ctx.fillText(value, spx + spw, y);
+    }
+    winStat('Max detection reached', Math.round(st.maxDet) + '%',                        spy + 16, false);
+    winStat('Times caught',          st.caught + (st.caught === 1 ? ' time' : ' times'), spy + 36, st.caught > 0);
+    winStat('Food stolen',           GameState.player.inventory.length + ' item(s)',     spy + 56, false);
+    winStat('Round score',           GameState.score + ' pts',                           spy + 76, false);
+    winStat('All-time best',         GameState.highScore + ' pts',                       spy + 96, true);
+
+    // NEW BEST banner
+    if (st.newBest) {
+      ctx.textAlign = 'center';
+      ctx.shadowColor = '#ffcc00'; ctx.shadowBlur = 12;
+      ctx.fillStyle = '#ffee55'; ctx.font = 'bold 13px sans-serif';
+      ctx.fillText('★  NEW PERSONAL BEST!  ★', cx, spy + 116); ctx.shadowBlur = 0;
+    }
+
+    // Divider
+    var btnY = spy + 132;
+    ctx.strokeStyle = 'rgba(0,255,100,0.10)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(bx + 40, btnY); ctx.lineTo(bx + bw - 40, btnY); ctx.stroke();
+
+    // ── Buttons ────────────────────────────────────────────────────────────
+    _drawButton(ctx, cx - 214, btnY + 14, 192, 44, '▶  NEXT ROUND', '#1a5e2a', function () {
       GameState.round++; Engine.reset(); GameState.phase = 'playing';
+    });
+    _drawButton(ctx, cx + 22, btnY + 14, 192, 44, '⌂  MAIN MENU', '#223344', function () {
+      GameState.phase = 'start';
     });
     ctx.textAlign = 'left';
   }
@@ -928,6 +1017,7 @@ window.UI = (function () {
   document.getElementById('game-container').appendChild(canvas);
   var ctx = canvas.getContext('2d');
   GameState.canvas = canvas; GameState.ctx = ctx;
+  GameState.highScore = parseInt(localStorage.getItem('mealPlanZeroHigh') || '0', 10) || 0;
 
   // ── Harnoor assets ────────────────────────────────────────────────────────
   var _harnoorImg = new Image();
@@ -960,8 +1050,13 @@ window.UI = (function () {
     var count = Math.min(1 + round, ALL_ROUTES.length);
     var spd   = 1 + (round - 1) * 0.18;
     GameState.workers = ALL_ROUTES.slice(0, count).map(function (r) {
-      return { x: r.x, y: r.y, vx: r.vx * spd, vy: r.vy * spd,
-               minX: r.minX, maxX: r.maxX, minY: r.minY, maxY: r.maxY, alerting: false };
+      var vx = r.vx * spd, vy = r.vy * spd;
+      return { x: r.x, y: r.y, vx: vx, vy: vy,
+               minX: r.minX, maxX: r.maxX, minY: r.minY, maxY: r.maxY,
+               alerting: false, wasAlerting: false, alertFlash: 0,
+               faceDir: Math.atan2(vy, vx),
+               scanTimer: 180 + Math.floor(Math.random() * 220),
+               scanning: false, scanPhase: 0, scanAngle: 0 };
     });
   }
 
@@ -1177,9 +1272,21 @@ window.UI = (function () {
 
   // ── Visual effects ────────────────────────────────────────────────────────
   var _shakeAmt = 0, _flashAlpha = 0;
-  var _harnoorAlertWas = false; // tracks prior frame so we yell only on enter
-  var _popups = [];  // { text, x, y, alpha, vy }
+  var _harnoorAlertWas = false;
+  var _popups    = [];
+  var _particles = [];
   var _introTime = 0;
+  var _comboCount = 0, _comboTimer = 0;
+  var _maxDetection = 0, _caughtThisRound = 0;
+  var _footTimer = 0;
+  window._floatingFoods = (function () {
+    var icons = ['🍕','🍔','🌮','🍜','🍰','🥗','🍦','🌯','🥩','🍣','🥐','🧁'];
+    return icons.map(function (ic, i) {
+      return { icon: ic, x: 30 + (i % 6) * 130 + Math.random() * 50,
+               y: 620 - Math.random() * 550, vy: -(0.35 + Math.random() * 0.4),
+               wobble: Math.random() * Math.PI * 2 };
+    });
+  })();
 
   function _addPopup(text, x, y) {
     _popups.push({ text: text, x: x, y: y, alpha: 1.0, vy: -1.2 });
@@ -1200,19 +1307,85 @@ window.UI = (function () {
     ctx.textAlign = 'left';
   }
 
+  // ── Particles ─────────────────────────────────────────────────────────────
+  function _spawnGrabBurst(x, y) {
+    for (var i = 0; i < 14; i++) {
+      var angle = (i / 14) * Math.PI * 2 + Math.random() * 0.3;
+      var spd = 1.5 + Math.random() * 2.8;
+      _particles.push({ x: x, y: y, vx: Math.cos(angle) * spd, vy: Math.sin(angle) * spd,
+                        r: 2 + Math.random() * 2.5, alpha: 1, decay: 0.028 + Math.random() * 0.02,
+                        color: Math.random() < 0.5 ? '#ffdd44' : '#ff8822' });
+    }
+  }
+
+  function _spawnDetectionSpark(x, y) {
+    for (var i = 0; i < 10; i++) {
+      var angle = (i / 10) * Math.PI * 2;
+      _particles.push({ x: x, y: y, vx: Math.cos(angle) * 3, vy: Math.sin(angle) * 3,
+                        r: 2, alpha: 1, decay: 0.055,
+                        color: i % 2 === 0 ? '#ff3300' : '#ffaa00' });
+    }
+  }
+
+  function _spawnFootpuff(x, y) {
+    _footTimer++;
+    if (_footTimer % 9 !== 0) return;
+    for (var i = 0; i < 2; i++) {
+      _particles.push({ x: x + (Math.random() - 0.5) * 7, y: y,
+                        vx: (Math.random() - 0.5) * 0.6, vy: -0.5 - Math.random() * 0.5,
+                        r: 1.2 + Math.random(), alpha: 0.5, decay: 0.022,
+                        color: 'rgba(170,150,130,1)' });
+    }
+  }
+
+  function _drawParticles(ctx) {
+    for (var i = _particles.length - 1; i >= 0; i--) {
+      var pt = _particles[i];
+      pt.x += pt.vx; pt.y += pt.vy;
+      pt.vx *= 0.91; pt.vy *= 0.91;
+      pt.alpha -= pt.decay;
+      if (pt.alpha <= 0) { _particles.splice(i, 1); continue; }
+      ctx.save();
+      ctx.globalAlpha = pt.alpha;
+      ctx.fillStyle = pt.color;
+      ctx.beginPath(); ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+  }
+
   function _drawRoundIntro(ctx) {
     var t = _introTime;
     var fade = t > 110 ? (130 - t) / 20 : t < 20 ? t / 20 : 1;
-    ctx.save(); ctx.globalAlpha = fade * 0.88;
-    ctx.fillStyle = 'rgba(0,0,0,0.75)'; ctx.fillRect(0, 190, 800, 210);
+    var flavors = ['', 'Time to eat for free.', "They're watching the counters.",
+      "They're onto you.", 'Getting spicy.', "Don't get greedy.",
+      "They've seen your face.", 'One wrong move\u2026', 'FINAL WAVE.'];
+    var flavor = flavors[Math.min(GameState.round, flavors.length - 1)] || '';
+    ctx.save();
+    // Full cinematic black overlay
+    ctx.globalAlpha = fade * 0.82;
+    ctx.fillStyle = '#000000'; ctx.fillRect(0, 0, 800, 600);
     ctx.globalAlpha = fade;
-    ctx.fillStyle = '#ffffff'; ctx.font = 'bold 58px serif'; ctx.textAlign = 'center';
-    ctx.shadowColor = '#00ff88'; ctx.shadowBlur = 30;
-    ctx.fillText('ROUND ' + GameState.round, 400, 285);
+    // Letterbox bars
+    ctx.fillStyle = 'rgba(0,0,0,0.92)';
+    ctx.fillRect(0, 0, 800, 48); ctx.fillRect(0, 552, 800, 48);
+    // "— ROUND X —" label
+    ctx.shadowColor = '#ffcc00'; ctx.shadowBlur = 20;
+    ctx.fillStyle = '#ffcc44'; ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('— ROUND ' + GameState.round + ' —', 400, 244);
     ctx.shadowBlur = 0;
-    ctx.fillStyle = '#aaaaaa'; ctx.font = '22px sans-serif';
+    // Countdown / GO
     var msg = t > 100 ? 'GET READY' : t > 70 ? '3' : t > 40 ? '2' : t > 15 ? '1' : 'GO!';
-    ctx.fillText(msg, 400, 340);
+    var fs  = msg === 'GO!' ? 80 : (msg === 'GET READY' ? 42 : 88);
+    ctx.shadowColor = msg === 'GO!' ? '#00ff88' : '#ffffff'; ctx.shadowBlur = 28;
+    ctx.fillStyle = msg === 'GO!' ? '#44ff88' : '#ffffff';
+    ctx.font = 'bold ' + fs + 'px serif'; ctx.fillText(msg, 400, 332);
+    ctx.shadowBlur = 0;
+    // Flavor text
+    if (flavor && t > 15) {
+      ctx.fillStyle = 'rgba(180,160,140,0.78)'; ctx.font = 'italic 16px serif';
+      ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 6;
+      ctx.fillText(flavor, 400, 395); ctx.shadowBlur = 0;
+    }
     ctx.restore(); ctx.textAlign = 'left';
   }
 
@@ -1241,19 +1414,31 @@ window.UI = (function () {
     });
     if (best) {
       best.grabbed = true;
-      GameState.player.inventory.push(best);
+      _comboTimer = 250; _comboCount++;
+      var mult = Math.min(_comboCount, 3);
+      var pts  = best.points * mult;
+      GameState.player.inventory.push({ icon: best.icon, points: pts });
       _playGrabSound();
-      _addPopup('+' + best.points + ' pts', best.x + 12, best.y - 10);
+      _spawnGrabBurst(best.x + 12, best.y + 12);
+      if (mult >= 2) {
+        _addPopup(mult + '× COMBO!  +' + pts, px, py - 34);
+      } else {
+        _addPopup('+' + pts + ' pts', best.x + 12, best.y - 10);
+      }
     }
   }
 
   // ── Lose a life ───────────────────────────────────────────────────────────
   function _loseLife() {
     GameState.lives = (GameState.lives || 1) - 1;
+    _caughtThisRound++;
     _shakeAmt = 14; _flashAlpha = 0.55;
     _playLoseLifeSound();
     if (GameState.lives <= 0) {
-      if (GameState.score > GameState.highScore) GameState.highScore = GameState.score;
+      if (GameState.score > GameState.highScore) {
+        GameState.highScore = GameState.score;
+        try { localStorage.setItem('mealPlanZeroHigh', GameState.highScore); } catch (e) {}
+      }
       GameState.phase = 'gameover';
     } else {
       GameState.detection = 0;
@@ -1287,11 +1472,19 @@ window.UI = (function () {
     p.x = Math.max(21, Math.min(759, p.x));
     p.y = Math.max(21, Math.min(559, p.y));
 
+    // Footstep particles
+    if (dx !== 0 || dy !== 0) _spawnFootpuff(p.x + p.width / 2, p.y + p.height + 1);
+
     // Exit check
     var ez = GameState.exitZone;
     if (p.inventory.length > 0 && _overlap(p.x,p.y,p.width,p.height,ez.x,ez.y,ez.w,ez.h)) {
       GameState.score += p.inventory.reduce(function (s, f) { return s + f.points; }, 0);
-      if (GameState.score > GameState.highScore) GameState.highScore = GameState.score;
+      var _isNewBest = GameState.score > GameState.highScore;
+      if (_isNewBest) {
+        GameState.highScore = GameState.score;
+        try { localStorage.setItem('mealPlanZeroHigh', GameState.highScore); } catch (e) {}
+      }
+      window._winStats = { maxDet: _maxDetection, caught: _caughtThisRound, newBest: _isNewBest };
       _playWinSound();
       GameState.phase = 'win';
     }
@@ -1304,23 +1497,46 @@ window.UI = (function () {
     var px = p.x + p.width / 2, py = p.y + p.height / 2;
     var anyDetecting = false;
     GameState.workers.forEach(function (w) {
-      w.x += w.vx; w.y += w.vy;
-      if (w.x <= w.minX || w.x >= w.maxX) { w.vx = -w.vx; w.x = Math.max(w.minX, Math.min(w.maxX, w.x)); }
-      if (w.y <= w.minY || w.y >= w.maxY) { w.vy = -w.vy; w.y = Math.max(w.minY, Math.min(w.maxY, w.y)); }
-      var dist = Math.hypot(px - (w.x + 10), py - (w.y + 12));
-      var range = p.crouching ? 60 : 120;
-      w.alerting = dist < range;
-      if (w.alerting) {
-        GameState.detection = Math.min(100, GameState.detection + (1 - dist / range) * (p.crouching ? 0.3 : 0.65));
-        anyDetecting = true;
+      // Look-around scan behaviour
+      if (w.scanning) {
+        w.scanPhase++;
+        w.scanAngle = Math.sin(w.scanPhase * Math.PI / 60) * 0.75;
+        if (w.scanPhase >= 120) { w.scanning = false; w.scanPhase = 0; w.scanAngle = 0; }
+      } else {
+        w.x += w.vx; w.y += w.vy;
+        if (w.x <= w.minX || w.x >= w.maxX) { w.vx = -w.vx; w.x = Math.max(w.minX, Math.min(w.maxX, w.x)); }
+        if (w.y <= w.minY || w.y >= w.maxY) { w.vy = -w.vy; w.y = Math.max(w.minY, Math.min(w.maxY, w.y)); }
+        if (Math.abs(w.vx) > 0 || Math.abs(w.vy) > 0) w.faceDir = Math.atan2(w.vy, w.vx);
+        w.scanTimer--;
+        if (w.scanTimer <= 0) { w.scanning = true; w.scanPhase = 0; w.scanTimer = 180 + Math.floor(Math.random() * 220); }
       }
+      // Vision cone detection
+      var wx = w.x + 10, wy = w.y + 12;
+      var dist = Math.hypot(px - wx, py - wy);
+      var coneRange = p.crouching ? 70 : 130;
+      var coneHalf  = p.crouching ? 0.50 : 0.72;
+      var facingDir = (w.faceDir || 0) + w.scanAngle;
+      var toPlayer  = Math.atan2(py - wy, px - wx);
+      var angleDiff = Math.abs(facingDir - toPlayer);
+      if (angleDiff > Math.PI) angleDiff = Math.PI * 2 - angleDiff;
+      w.alerting = dist < coneRange && angleDiff < coneHalf;
+      if (w.alerting) {
+        GameState.detection = Math.min(100, GameState.detection + (1 - dist / coneRange) * (p.crouching ? 0.3 : 0.65));
+        anyDetecting = true;
+        _maxDetection = Math.max(_maxDetection, GameState.detection);
+      }
+      // Rising edge: flash + sparks
+      if (w.alerting && !w.wasAlerting) {
+        w.alertFlash = 22;
+        _shakeAmt = Math.max(_shakeAmt, 5);
+        _spawnDetectionSpark(wx, wy);
+      }
+      w.wasAlerting = w.alerting;
+      if (w.alertFlash > 0) w.alertFlash--;
     });
     if (!anyDetecting) GameState.detection = Math.max(0, GameState.detection - 0.14);
-    // Harnoor (worker[0]) yells when player enters his range
     var harnoorNowAlerting = GameState.workers.length > 0 && GameState.workers[0].alerting;
-    if (harnoorNowAlerting && !_harnoorAlertWas) {
-      _playHarnoorYell();
-    }
+    if (harnoorNowAlerting && !_harnoorAlertWas) _playHarnoorYell();
     _harnoorAlertWas = harnoorNowAlerting;
     if (GameState.detection >= 100) _loseLife();
   }
@@ -1433,8 +1649,24 @@ window.UI = (function () {
   function _drawWorkers(ctx) {
     var harnoorReady = _harnoorImg.complete && _harnoorImg.naturalWidth > 0;
     GameState.workers.forEach(function (w, wi) {
-      var cx = w.x + 10, range = 120;
+      var cx = w.x + 10, wy = w.y + 12, range = 120;
       var isHarnoor = (wi === 0);
+
+      // ── Vision cone (drawn behind body) ─────────────────────────────────
+      var coneDir = (w.faceDir || 0) + w.scanAngle;
+      var coneLen = 130, coneH = 0.72;
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(cx, wy);
+      ctx.lineTo(cx + Math.cos(coneDir - coneH) * coneLen, wy + Math.sin(coneDir - coneH) * coneLen);
+      ctx.lineTo(cx + Math.cos(coneDir + coneH) * coneLen, wy + Math.sin(coneDir + coneH) * coneLen);
+      ctx.closePath();
+      ctx.fillStyle = w.alerting ? 'rgba(255,30,0,0.22)' : 'rgba(255,220,60,0.09)';
+      ctx.fill();
+      ctx.strokeStyle = w.alerting ? 'rgba(255,60,0,0.38)' : 'rgba(255,230,80,0.14)';
+      ctx.lineWidth = 1; ctx.stroke();
+      ctx.restore();
+
       var pulse = w.alerting ? 0.12 * Math.sin(Date.now() * 0.015) : 0;
       var gc = w.alerting ? 'rgba(255,60,0,' : 'rgba(255,210,0,';
       var glow = ctx.createRadialGradient(cx, w.y + 12, 0, cx, w.y + 12, range);
@@ -1514,6 +1746,14 @@ window.UI = (function () {
       ctx.strokeStyle = 'rgba(0,0,0,0.12)'; ctx.lineWidth = 0.5;
       ctx.strokeRect(w.x + 3, w.y - 4, 14, 7);
 
+      // ── alertFlash ring ─────────────────────────────────────────────────
+      if (w.alertFlash > 0) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(255,255,255,' + (w.alertFlash / 22 * 0.9) + ')';
+        ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(cx, wy, 18, 0, Math.PI * 2); ctx.stroke();
+        ctx.restore();
+      }
       if (w.alerting) {
         ctx.fillStyle = '#ff3300'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center';
         ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 4;
@@ -1533,7 +1773,9 @@ window.UI = (function () {
       GameState.player.stamina = 100;
       GameState.player.inventory = [];
       _introTime = 130;
-      _popups = [];
+      _popups = []; _particles = [];
+      _comboCount = 0; _comboTimer = 0;
+      _maxDetection = 0; _caughtThisRound = 0;
       _shakeAmt = 0; _flashAlpha = 0;
       _initWorkers();
       _initCarts();
@@ -1566,10 +1808,12 @@ window.UI = (function () {
         _updatePlayer();
         _updateWorkers();
         _updateCarts();
+        if (_comboTimer > 0) { _comboTimer--; if (_comboTimer === 0) _comboCount = 0; }
       }
       _drawCarts(ctx);
       _drawWorkers(ctx);
       _drawPlayer(ctx);
+      _drawParticles(ctx);
       _drawPopups(ctx);
     }
     _drawFlash(ctx);
