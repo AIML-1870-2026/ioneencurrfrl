@@ -1,0 +1,209 @@
+# NEO Close Approach Tracker — spec.md
+
+## Overview
+
+A single-page web dashboard that pulls live data from NASA's NeoWs API and JPL's SBDB Close-Approach and Sentry APIs. The page has a **dark, mission-control aesthetic** — deep navy/black background, glowing accent colors (teal, amber, red), monospace typography for data values, and subtle grid/scanline texture to evoke a space operations center. No frameworks — pure HTML, CSS, and vanilla JavaScript in a single file.
+
+---
+
+## APIs Used
+
+| API | Base URL | Auth |
+|-----|----------|------|
+| NeoWs (NASA) | `https://api.nasa.gov/neo/rest/v1/feed` | API key via query param (`?api_key=DEMO_KEY`) |
+| SBDB Close-Approach (JPL) | `https://ssd-api.jpl.nasa.gov/cad.api` | None required |
+| Sentry Impact Monitor (JPL) | `https://ssd-api.jpl.nasa.gov/sentry.api` | None required |
+
+The NASA API key is stored in a `const API_KEY` at the top of the script so it's easy to swap in a personal key.
+
+---
+
+## Tab Structure
+
+The page has **four tabs** displayed in a horizontal pill-style nav bar at the top. The active tab is highlighted in teal. Tab content swaps in-place with no page reload.
+
+---
+
+### Tab 1 — This Week in Space Rocks
+
+**Data source:** NeoWs API, current week (today → +7 days)
+
+**Purpose:** A high-energy "what's happening right now" summary — the first thing a user sees when they open the dashboard.
+
+**Layout:**
+
+1. **Headline stat row** — four glowing stat cards across the top:
+   - Closest approach this week (in lunar distances, rounded to 2 decimal places)
+   - Largest asteroid this week (estimated max diameter in meters)
+   - Fastest flyby this week (relative velocity in km/s)
+   - Count of potentially hazardous asteroids (PHAs) in the window
+
+2. **Asteroid table** — sortable by date, size, miss distance, or velocity. Columns:
+   - Name (linked to NASA's JPL small-body lookup page)
+   - Close approach date
+   - Estimated diameter (min–max in meters)
+   - Miss distance (lunar distances + km in parentheses)
+   - Relative velocity (km/s)
+   - Hazardous? (red "⚠ PHA" badge or green "—")
+
+3. **Size comparisons** — when a row is clicked/selected, a panel slides open below the table showing the asteroid's estimated diameter compared to familiar objects:
+   - School bus (~12 m)
+   - Blue whale (~30 m)
+   - Statue of Liberty (~93 m)
+   - Eiffel Tower (~300 m)
+   - Empire State Building (~443 m)
+   - Each comparison item shows a simple horizontal bar scaled relative to the asteroid diameter.
+
+**Loading state:** Skeleton placeholder cards while fetch is in progress. Error state shows a styled message with the API error text.
+
+---
+
+### Tab 2 — Historical & Future Approaches
+
+**Data source:** SBDB Close-Approach API
+
+**Purpose:** Let users explore the broader archive — not just this week, but recent history and the near future.
+
+**Controls (filter bar at top):**
+- Date range picker: presets for "Past 30 days", "Past year", "Next 6 months", "Next year", plus custom start/end date inputs
+- Max miss distance filter: slider from 0.1 LD to 10 LD
+- Min object diameter filter: dropdown — Any / >10 m / >50 m / >100 m / >500 m
+- "Show only PHAs" toggle
+
+**Visualizations:**
+
+1. **Timeline chart** (Chart.js bar or scatter) — one mark per close approach plotted by date (x-axis) vs. miss distance in lunar distances (y-axis). PHAs shown in amber/red, non-PHAs in teal. Hovering a mark shows a tooltip with object name, date, distance, and diameter.
+
+2. **Results table** — same columns as Tab 1 but without the "this week" context. Sortable. Clicking a row opens the size comparison panel (same component as Tab 1).
+
+**Default state on load:** Past 30 days, all distances, all sizes.
+
+---
+
+### Tab 3 — Sentry Watch List
+
+**Data source:** Sentry API (full object list, sorted by Palermo scale descending)
+
+**Purpose:** Show which asteroids have a non-zero impact probability over the next ~100 years and explain what the risk scores mean.
+
+**Layout:**
+
+1. **Explainer banner** — a collapsible "How to read this" section with a brief plain-language description of the Torino and Palermo scales. Collapsed by default on desktop, expanded on first visit.
+
+2. **Risk overview cards** — three stat cards:
+   - Total objects in Sentry catalog
+   - Objects with Torino scale ≥ 1 (genuinely elevated concern)
+   - Highest cumulative impact probability in catalog (as a percentage)
+
+3. **Sortable data table** — columns:
+   - Object name (linked to JPL Sentry page)
+   - Estimated diameter (m)
+   - Year range (earliest to latest potential impact year)
+   - Number of potential impact solutions
+   - Cumulative impact probability
+   - Palermo scale value (color-coded: green < −2, yellow −2 to −1, amber −1 to 0, red ≥ 0)
+   - Torino scale (0–10, color-coded accordingly)
+
+4. **Detail panel** — clicking a row expands inline to show: velocity, full probability breakdown by year (if available), and a one-sentence plain-language risk summary generated by Claude via the Anthropic API (see AI Feature below).
+
+---
+
+### Tab 4 — 3D Earth View *(Stretch)*
+
+**Data source:** NeoWs API (same week fetch as Tab 1, cached/shared)
+
+**Library:** `globe.gl` loaded from CDN
+
+**Purpose:** Visually dramatic — see this week's asteroids floating around an interactive 3D Earth.
+
+**Behavior:**
+
+- Globe renders with Earth texture, auto-rotates slowly until the user interacts.
+- Each asteroid is shown as a glowing dot at an altitude above the globe surface derived from its miss distance using a **log-compressed scale**:
+  - 0 LD → surface level (hypothetical)
+  - 1 LD (Moon distance) → a reference ring labeled "Moon orbit"
+  - 2 LD → roughly 80% of max visual altitude
+  - Scale is logarithmic so even the closest approaches are clearly visible and not collapsed to the surface
+- The Moon itself is shown as a labeled gray dot at 1 LD reference altitude.
+- Dot color: red for PHAs, teal for non-PHAs. Dot size scales with estimated diameter.
+- Clicking a dot opens a floating info card (asteroid name, date, miss distance, velocity, hazardous flag).
+- Clicking an asteroid in the info card navigates to Tab 1 with that asteroid's row highlighted and expanded.
+- A small legend in the bottom-left explains color and size encoding.
+- Note on positioning: NeoWs does not provide the geographic location of closest approach. Asteroids are distributed at random longitudes/latitudes around the globe for visual effect; a disclaimer note clarifies this.
+
+---
+
+## Visual Design
+
+| Token | Value |
+|-------|-------|
+| Background | `#050a14` (near-black navy) |
+| Surface / card | `#0d1b2a` |
+| Border | `#1a3a5c` |
+| Accent teal | `#00d4c8` |
+| Accent amber | `#f5a623` |
+| Danger red | `#ff4d4d` |
+| Text primary | `#e8f0fe` |
+| Text muted | `#7a9ab5` |
+| Font — labels/UI | `Inter`, sans-serif |
+| Font — data values | `JetBrains Mono`, monospace |
+
+Cards have a subtle `box-shadow: 0 0 12px rgba(0, 212, 200, 0.15)` glow. The active tab pill glows teal. Table rows highlight teal on hover. Transitions on all interactive states: 150ms ease.
+
+---
+
+## AI Feature (Anthropic API)
+
+In the **Sentry Watch List** tab, when a user expands an asteroid's detail row, a plain-language risk summary is fetched from the Anthropic API:
+
+- **Model:** `claude-sonnet-4-20250514`
+- **Prompt:** Sends the asteroid's name, diameter, impact probability, Palermo scale, Torino scale, and year range. Asks Claude to write a single paragraph (2–4 sentences) explaining what these numbers actually mean for an educated non-scientist — no jargon, no panic, calibrated reassurance where appropriate.
+- **UI:** The summary appears in a styled blockquote below the raw data. A small "✦ AI summary" label tags it so users know it's generated. A loading spinner shows while the fetch is in progress.
+- **Error handling:** If the API call fails, the section is silently hidden (no broken UI).
+
+---
+
+## Code Structure
+
+Single file: `index.html`
+
+```
+index.html
+├── <head>
+│   ├── CDN: Inter + JetBrains Mono (Google Fonts)
+│   ├── CDN: Chart.js
+│   ├── CDN: globe.gl (loaded only when Tab 4 is first activated)
+│   └── <style> — all CSS, CSS custom properties for design tokens
+└── <body>
+    ├── #header — site title + subtitle
+    ├── #tab-nav — four tab buttons
+    ├── #tab-content — four .tab-panel divs (display:none except active)
+    └── <script>
+        ├── const API_KEY = "DEMO_KEY"
+        ├── Data fetching functions (fetchNeoWs, fetchSBDB, fetchSentry)
+        ├── Shared state object (cached API results, selected asteroid)
+        ├── Tab renderer functions (renderWeekTab, renderHistoryTab, renderSentryTab, renderGlobeTab)
+        ├── UI component helpers (buildTable, buildStatCard, buildSizeComparison)
+        ├── Anthropic API call (fetchAISummary)
+        └── Init: fetch NeoWs on load, render Tab 1
+```
+
+All fetch calls include error handling. Rate-limit errors from NeoWs (HTTP 429) show a specific friendly message suggesting the user swap in a personal API key.
+
+---
+
+## Acceptance Criteria
+
+- [ ] Page loads and displays Tab 1 data within ~3 seconds on a normal connection
+- [ ] All four tabs are navigable; active tab is visually distinct
+- [ ] NeoWs data is live (not hardcoded); date range covers the current week
+- [ ] Stat cards on Tab 1 show correct values derived from the fetched data
+- [ ] Table on Tab 1 is sortable by at least date and miss distance
+- [ ] Size comparison panel opens on row click with scaled bars
+- [ ] Tab 2 filter controls change the displayed data (re-fetch or client-side filter)
+- [ ] Tab 2 chart renders with correct axes and PHA color coding
+- [ ] Tab 3 table loads Sentry data and Palermo scale is color-coded
+- [ ] Expanding a Sentry row triggers an Anthropic API call and displays the summary
+- [ ] Tab 4 globe renders, asteroids appear as colored dots at varied altitudes, clicking shows info card
+- [ ] Page is fully self-contained in one HTML file (no local dependencies)
+- [ ] Page looks correct on desktop (1280px+) and is readable on tablet (768px)
