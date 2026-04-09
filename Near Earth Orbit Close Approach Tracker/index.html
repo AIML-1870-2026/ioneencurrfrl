@@ -564,7 +564,7 @@
   <div id="tab-globe" class="tab-panel">
     <div class="section-label">This week's asteroids visualized around Earth — interactive 3D view</div>
     <div id="globe-container"></div>
-    <p class="globe-disclaimer">⚠ Asteroid longitudes/latitudes are random for visual effect. Only altitude (derived from miss distance via log scale) reflects real data. Moon orbit reference shown at 1 LD.</p>
+    <p class="globe-disclaimer">⚠ Asteroid positions on the globe are randomized for visual effect — real approach paths don't map to specific Earth coordinates. Point size reflects estimated diameter; purple = potentially hazardous.</p>
   </div>
 
 </div><!-- #tab-content -->
@@ -1216,13 +1216,10 @@ async function renderGlobeTab() {
     }
   }
 
-  const LOG_MAX = Math.log(1 + 50); // reference max 50 LD
-  const altFromLD = ld => Math.max(0.02, Math.log(1+ld)/LOG_MAX * 0.8);
-
   const asteroidPoints = S.weekData.map(ast => ({
     lat:      (Math.random()-0.5)*140,
     lng:      Math.random()*360-180,
-    alt:      altFromLD(ast.missLD),
+    alt:      0,
     color:    ast.isPHA ? '#c44dff' : '#ff4daa',
     radius:   Math.max(0.3, Math.min(2.5, (ast.diamMax||50)/180)),
     label:    `${ast.name}\n${ast.date}\n${f2(ast.missLD)} LD · ${f2(ast.velocity)} km/s${ast.isPHA?'\n⚠ Potentially Hazardous':''}`,
@@ -1230,15 +1227,7 @@ async function renderGlobeTab() {
     isMoon:   false,
   }));
 
-  // Moon orbit ring reference
-  const moonAlt = altFromLD(1);
-  const moonPoints = Array.from({length:36},(_,i)=>({
-    lat:0, lng:i*10, alt:moonAlt,
-    color:'rgba(220,180,255,0.4)', radius:0.12,
-    label:'Moon orbit (1 LD)', asteroid:null, isMoon:true,
-  }));
-
-  const allPoints = [...asteroidPoints, ...moonPoints];
+  const allPoints = [...asteroidPoints];
 
   const globe = Globe()(document.getElementById('globe-container'))
     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
