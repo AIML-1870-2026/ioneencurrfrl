@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Review Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+  :root {
+    --bg-gradient: radial-gradient(ellipse at 20% 50%, #c9d6ff, #e2e2f0, #fbc2eb);
+    --glass-bg: rgba(255,255,255,0.18);
+    --glass-border: rgba(255,255,255,0.45);
+    --glass-shadow: 0 8px 32px rgba(100,100,180,0.18);
+    --blur: blur(18px);
+    --accent: #7c6ef7;
+    --accent-secondary: #f472b6;
+    --text-primary: #1e1b4b;
+    --text-secondary: #6b7280;
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f59e0b;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-primary);
+    min-height: 100vh;
+    background: var(--bg-gradient);
+    background-size: 400% 400%;
+    animation: meshShift 14s ease infinite;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes meshShift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .glass {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border-radius: 18px;
+    padding: 24px;
+  }
+
+  .fade-up { opacity: 0; transform: translateY(22px); animation: fadeUp 0.55s ease forwards; }
+  .fade-up:nth-child(1) { animation-delay: 0.05s; }
+  .fade-up:nth-child(2) { animation-delay: 0.12s; }
+  .fade-up:nth-child(3) { animation-delay: 0.19s; }
+  .fade-up:nth-child(4) { animation-delay: 0.26s; }
+  .fade-up:nth-child(5) { animation-delay: 0.33s; }
+  .fade-up:nth-child(6) { animation-delay: 0.40s; }
+  .fade-up:nth-child(7) { animation-delay: 0.47s; }
+  .fade-up:nth-child(8) { animation-delay: 0.54s; }
+  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+  /* Header */
+  .header-title h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.4rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.15;
+  }
+  .header-title p {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    margin-top: 5px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid;
+    margin-top: 12px;
+  }
+  .badge.privacy { background: rgba(124,110,247,0.1); border-color: rgba(124,110,247,0.3); color: var(--accent); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; display: inline-block; }
+
+  /* Section labels */
+  .section-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 14px;
+  }
+
+  /* Inputs */
+  input[type=text], input[type=password], textarea, select {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--glass-border);
+    background: rgba(255,255,255,0.35);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    outline: none;
+    transition: border 0.2s, box-shadow 0.2s;
+  }
+  input[type=text]:focus, input[type=password]:focus, textarea:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(124,110,247,0.13);
+  }
+  textarea { resize: vertical; line-height: 1.6; }
+
+  .field-group { display: flex; flex-direction: column; gap: 6px; }
+  .field-group label { font-size: 0.83rem; font-weight: 500; color: var(--text-secondary); }
+  .field-group label span.req { color: var(--accent); margin-left: 2px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+
+  .key-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .key-row input { flex: 1; min-width: 220px; }
+
+  .key-hint { font-size: 0.8rem; color: var(--text-secondary); margin-top: 8px; }
+  .key-hint strong { color: var(--accent); }
+
+  /* Buttons */
+  .btn {
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+  }
+  .btn:hover:not(:disabled) { transform: scale(1.03); box-shadow: 0 4px 18px rgba(124,110,247,0.22); }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn-ghost { background: rgba(255,255,255,0.3); border: 1px solid var(--glass-border); color: var(--text-primary); }
+  .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+
+  .generate-btn {
+    width: 100%;
+    padding: 17px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: transform 0.15s, box-shadow 0.2s, opacity 0.15s;
+    letter-spacing: 0.03em;
+  }
+  .generate-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,110,247,0.38); }
+  .generate-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+  /* Sliders */
+  .slider-row { display: flex; flex-direction: column; gap: 8px; }
+  .slider-header { display: flex; justify-content: space-between; align-items: center; }
+  .slider-header label { font-size: 0.83rem; font-weight: 500; color: var(--text-secondary); }
+  .slider-value {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--accent);
+    background: rgba(124,110,247,0.1);
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(124,110,247,0.25);
+  }
+  .slider-endpoints { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary); margin-top: -2px; }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(to right, var(--accent), var(--accent-secondary));
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--accent);
+    box-shadow: 0 2px 8px rgba(124,110,247,0.3);
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+  input[type=range]::-moz-range-thumb {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--accent);
+    cursor: pointer;
+  }
+
+  .sliders-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 600px) { .sliders-grid { grid-template-columns: 1fr; } }
+
+  .sentiment-grid { display: flex; flex-direction: column; gap: 18px; }
+
+  /* Select */
+  select {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 34px;
+  }
+
+  /* Output panel */
+  .output-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+
+  .review-content {
+    min-height: 80px;
+    max-height: 600px;
+    overflow-y: auto;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.22);
+    border: 1px solid var(--glass-border);
+    padding: 20px 22px;
+    font-size: 0.92rem;
+    line-height: 1.75;
+    word-break: break-word;
+  }
+  .review-content.empty { color: var(--text-secondary); font-style: italic; }
+
+  /* Markdown styles inside review-content */
+  .review-content h1, .review-content h2, .review-content h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 1rem 0 0.5rem;
+  }
+  .review-content h1 { font-size: 1.5rem; }
+  .review-content h2 { font-size: 1.25rem; }
+  .review-content h3 { font-size: 1.1rem; }
+  .review-content p { margin-bottom: 0.75rem; }
+  .review-content ul, .review-content ol { padding-left: 1.4rem; margin-bottom: 0.75rem; }
+  .review-content li { margin-bottom: 0.3rem; }
+  .review-content strong { color: var(--text-primary); font-weight: 600; }
+  .review-content em { color: var(--text-secondary); }
+  .review-content hr { border: none; border-top: 1px solid var(--glass-border); margin: 1rem 0; }
+
+  /* Loading spinner */
+  .spinner {
+    display: inline-block;
+    width: 20px; height: 20px;
+    border: 2px solid rgba(124,110,247,0.2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-msg { display: flex; align-items: center; color: var(--accent); font-size: 0.9rem; font-style: italic; }
+
+  /* Error */
+  .error-msg {
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--error);
+    font-size: 0.88rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  /* Divider */
+  .divider { border: none; border-top: 1px solid var(--glass-border); margin: 4px 0; }
+
+  /* File loader for .env */
+  .file-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px dashed rgba(124,110,247,0.4);
+    background: rgba(124,110,247,0.07);
+    color: var(--accent);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+  .file-label:hover { background: rgba(124,110,247,0.14); }
+  .file-label input { display: none; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- 1. Header -->
+  <div class="glass fade-up">
+    <div class="header-title">
+      <h1>Product Review Generator</h1>
+      <p>Describe a product, tune the tone and sentiment — get a realistic AI-written review.</p>
+      <span class="badge privacy"><span class="dot"></span> API key stored in memory only — never persisted</span>
+    </div>
+  </div>
+
+  <!-- 2. API Key -->
+  <div class="glass fade-up">
+    <div class="section-label">OpenAI API Key</div>
+    <div class="key-row">
+      <input type="password" id="apiKey" placeholder="sk-…  paste your OpenAI key here" autocomplete="off">
+      <label class="file-label">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Load .env
+        <input type="file" id="envFile" accept=".env,text/plain">
+      </label>
+    </div>
+    <p class="key-hint">Your key is held in a JavaScript variable only — <strong>never written to localStorage, sessionStorage, or any external store</strong>.</p>
+  </div>
+
+  <!-- 3. Model Selection -->
+  <div class="glass fade-up">
+    <div class="section-label">Model</div>
+    <div class="two-col">
+      <div class="field-group">
+        <label>Model Family</label>
+        <select id="modelFamily">
+          <option value="gpt-4o">GPT-4o</option>
+          <option value="gpt-4.1">GPT-4.1</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>Specific Model</label>
+        <select id="modelId">
+          <option value="gpt-4o">gpt-4o</option>
+          <option value="gpt-4o-mini">gpt-4o-mini</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Product Details -->
+  <div class="glass fade-up">
+    <div class="section-label">Product Details</div>
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div class="field-group">
+        <label>Product Name <span class="req">*</span></label>
+        <input type="text" id="productName" placeholder="e.g. Sony WH-1000XM5">
+      </div>
+      <div class="field-group">
+        <label>Product Description <span class="req">*</span></label>
+        <textarea id="productDesc" rows="3" placeholder="What it is, who it's for, key features…"></textarea>
+      </div>
+      <div class="two-col">
+        <div class="field-group">
+          <label>Pros <span style="font-weight:400;font-size:0.78rem;">(optional)</span></label>
+          <textarea id="productPros" rows="2" placeholder="Things you liked…"></textarea>
+        </div>
+        <div class="field-group">
+          <label>Cons <span style="font-weight:400;font-size:0.78rem;">(optional)</span></label>
+          <textarea id="productCons" rows="2" placeholder="Things you didn't like…"></textarea>
+        </div>
+      </div>
+      <div class="field-group">
+        <label>Use Case <span style="font-weight:400;font-size:0.78rem;">(optional)</span></label>
+        <input type="text" id="useCase" placeholder="e.g. daily commuting, home office setup">
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Review Style -->
+  <div class="glass fade-up">
+    <div class="section-label">Review Style</div>
+    <div class="sliders-grid">
+      <div class="slider-row">
+        <div class="slider-header">
+          <label>Tone</label>
+          <span class="slider-value" id="toneLabel">Balanced</span>
+        </div>
+        <input type="range" id="toneSlider" min="0" max="100" value="50">
+        <div class="slider-endpoints"><span>Casual</span><span>Formal</span></div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-header">
+          <label>Length</label>
+          <span class="slider-value" id="lengthLabel">Medium</span>
+        </div>
+        <input type="range" id="lengthSlider" min="0" max="100" value="50">
+        <div class="slider-endpoints"><span>Short</span><span>Long</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Sentiment by Aspect -->
+  <div class="glass fade-up">
+    <div class="section-label">Sentiment by Aspect</div>
+    <div class="sentiment-grid">
+      <div class="slider-row">
+        <div class="slider-header">
+          <label>Price / Value</label>
+          <span class="slider-value" id="priceLabel">Mixed</span>
+        </div>
+        <input type="range" id="priceSlider" min="1" max="5" value="3">
+        <div class="slider-endpoints"><span>Very Negative</span><span>Very Positive</span></div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-header">
+          <label>Features</label>
+          <span class="slider-value" id="featuresLabel">Mixed</span>
+        </div>
+        <input type="range" id="featuresSlider" min="1" max="5" value="3">
+        <div class="slider-endpoints"><span>Very Negative</span><span>Very Positive</span></div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-header">
+          <label>Usability / Experience</label>
+          <span class="slider-value" id="usabilityLabel">Mixed</span>
+        </div>
+        <input type="range" id="usabilitySlider" min="1" max="5" value="3">
+        <div class="slider-endpoints"><span>Very Negative</span><span>Very Positive</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. Generate Button -->
+  <div class="fade-up">
+    <button class="generate-btn" id="generateBtn" onclick="generateReview()">
+      ✦ Generate Review
+    </button>
+  </div>
+
+  <!-- 8. Output Panel -->
+  <div class="glass fade-up" id="outputPanel" style="display:none;">
+    <div class="output-header">
+      <div class="section-label" style="margin-bottom:0;">Generated Review</div>
+      <button class="btn btn-ghost btn-sm" id="copyBtn" onclick="copyReview()">Copy Review</button>
+    </div>
+    <div id="reviewContent" class="review-content empty">Your review will appear here…</div>
+  </div>
+
+</div>
+
+<script>
+  // ── Model map ──────────────────────────────────────────────────────────────
+  const MODEL_MAP = {
+    'gpt-4o':  ['gpt-4o', 'gpt-4o-mini'],
+    'gpt-4.1': ['gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano'],
+  };
+
+  document.getElementById('modelFamily').addEventListener('change', function() {
+    const models = MODEL_MAP[this.value] || [];
+    const sel = document.getElementById('modelId');
+    sel.innerHTML = models.map(m => `<option value="${m}">${m}</option>`).join('');
+  });
+
+  // ── .env file loader ───────────────────────────────────────────────────────
+  document.getElementById('envFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target.result;
+      const match = text.match(/OPENAI_API_KEY\s*=\s*["']?([^\s"']+)["']?/);
+      if (match) {
+        document.getElementById('apiKey').value = match[1];
+      } else {
+        // Try bare sk- line
+        const bare = text.match(/(sk-[A-Za-z0-9_-]+)/);
+        if (bare) document.getElementById('apiKey').value = bare[1];
+      }
+    };
+    reader.readAsText(file);
+    this.value = '';
+  });
+
+  // ── Slider label helpers ───────────────────────────────────────────────────
+  function toneLabel(v) {
+    if (v < 33) return 'Casual';
+    if (v < 67) return 'Balanced';
+    return 'Formal';
+  }
+  function lengthLabel(v) {
+    if (v < 33) return 'Short';
+    if (v < 67) return 'Medium';
+    return 'Long';
+  }
+  const SENTIMENT_LABELS = ['', 'Very Negative', 'Negative', 'Mixed', 'Positive', 'Very Positive'];
+
+  document.getElementById('toneSlider').addEventListener('input', function() {
+    document.getElementById('toneLabel').textContent = toneLabel(+this.value);
+  });
+  document.getElementById('lengthSlider').addEventListener('input', function() {
+    document.getElementById('lengthLabel').textContent = lengthLabel(+this.value);
+  });
+  document.getElementById('priceSlider').addEventListener('input', function() {
+    document.getElementById('priceLabel').textContent = SENTIMENT_LABELS[+this.value];
+  });
+  document.getElementById('featuresSlider').addEventListener('input', function() {
+    document.getElementById('featuresLabel').textContent = SENTIMENT_LABELS[+this.value];
+  });
+  document.getElementById('usabilitySlider').addEventListener('input', function() {
+    document.getElementById('usabilityLabel').textContent = SENTIMENT_LABELS[+this.value];
+  });
+
+  // ── Generate Review ────────────────────────────────────────────────────────
+  async function generateReview() {
+    const apiKey = document.getElementById('apiKey').value.trim();
+    const productName = document.getElementById('productName').value.trim();
+    const productDesc = document.getElementById('productDesc').value.trim();
+    const pros = document.getElementById('productPros').value.trim() || 'Not provided';
+    const cons = document.getElementById('productCons').value.trim() || 'Not provided';
+    const useCase = document.getElementById('useCase').value.trim() || 'Not provided';
+    const modelId = document.getElementById('modelId').value;
+
+    const tone = toneLabel(+document.getElementById('toneSlider').value);
+    const length = lengthLabel(+document.getElementById('lengthSlider').value);
+    const priceSentiment = SENTIMENT_LABELS[+document.getElementById('priceSlider').value];
+    const featuresSentiment = SENTIMENT_LABELS[+document.getElementById('featuresSlider').value];
+    const usabilitySentiment = SENTIMENT_LABELS[+document.getElementById('usabilitySlider').value];
+
+    // Validation
+    if (!apiKey) return showError('Please enter your OpenAI API key.');
+    if (!productName) return showError('Product Name is required.');
+    if (!productDesc) return showError('Product Description is required.');
+
+    const lengthInstructions = {
+      'Short': 'Short (1–2 paragraphs)',
+      'Medium': 'Medium (3–4 paragraphs)',
+      'Long': 'Long (5+ paragraphs)',
+    }[length];
+
+    const systemPrompt =
+`You are a product review writer. Write a realistic, detailed product review based on the information provided by the user.
+
+Tone: ${tone}
+Length: ${lengthInstructions}
+
+Reflect the following sentiment for each aspect of the product:
+- Price / Value: ${priceSentiment}
+- Features: ${featuresSentiment}
+- Usability / Experience: ${usabilitySentiment}
+
+Format your response in markdown with clear sections and headings. Do not mention that this review was AI-generated.`;
+
+    const userMessage =
+`Product: ${productName}
+Description: ${productDesc}
+Pros: ${pros}
+Cons: ${cons}
+Use Case: ${useCase}`;
+
+    const btn = document.getElementById('generateBtn');
+    const panel = document.getElementById('outputPanel');
+    const content = document.getElementById('reviewContent');
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Generating…';
+    panel.style.display = 'block';
+    content.className = 'review-content';
+    content.innerHTML = '<div class="loading-msg"><span class="spinner"></span>Writing your review…</div>';
+
+    try {
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: modelId,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userMessage },
+          ],
+        }),
+      });
+
+      if (!res.ok) {
+        let errMsg = `API error ${res.status}`;
+        try {
+          const errData = await res.json();
+          if (errData.error && errData.error.message) errMsg = errData.error.message;
+        } catch (_) {}
+        throw new Error(errMsg);
+      }
+
+      const data = await res.json();
+      const markdown = data.choices[0].message.content;
+      content.className = 'review-content';
+      content.innerHTML = marked.parse(markdown);
+      // Store plain text for copy
+      content.dataset.plain = markdown;
+
+    } catch (err) {
+      content.className = 'review-content';
+      content.innerHTML = `<div class="error-msg">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span><strong>Error:</strong> ${escapeHtml(err.message)}</span>
+      </div>`;
+      content.dataset.plain = '';
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '✦ Generate Review';
+    }
+  }
+
+  // ── Copy Review ────────────────────────────────────────────────────────────
+  function copyReview() {
+    const content = document.getElementById('reviewContent');
+    const text = content.dataset.plain || content.innerText;
+    if (!text || !text.trim()) return;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy Review', 2000);
+    });
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function showError(msg) {
+    const panel = document.getElementById('outputPanel');
+    const content = document.getElementById('reviewContent');
+    panel.style.display = 'block';
+    content.className = 'review-content';
+    content.innerHTML = `<div class="error-msg">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span>${escapeHtml(msg)}</span>
+    </div>`;
+    content.dataset.plain = '';
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>
