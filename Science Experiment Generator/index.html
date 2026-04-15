@@ -16,7 +16,7 @@
     --glass-shadow: 0 8px 32px rgba(220,80,130,0.12);
     --blur: blur(20px);
     --accent: #e0457b;
-    --accent-secondary: #c026d3;
+    --accent-2: #c026d3;
     --text-primary: #5b1a35;
     --text-secondary: #9b5a72;
     --success: #10b981;
@@ -38,11 +38,9 @@
 
   body::before {
     content: '';
-    position: fixed;
-    inset: 0;
+    position: fixed; inset: 0;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
+    pointer-events: none; z-index: 0;
   }
 
   @keyframes meshShift {
@@ -51,35 +49,25 @@
     100% { background-position: 0% 50%; }
   }
 
-  /* floating blobs */
   .blob {
-    position: fixed;
-    border-radius: 50%;
-    filter: blur(60px);
-    opacity: 0.35;
-    pointer-events: none;
-    z-index: 0;
+    position: fixed; border-radius: 50%; filter: blur(60px);
+    opacity: 0.35; pointer-events: none; z-index: 0;
     animation: blobFloat 18s ease-in-out infinite;
   }
   .blob-1 { width: 420px; height: 420px; background: #ffb3d1; top: -100px; left: -120px; animation-delay: 0s; }
   .blob-2 { width: 340px; height: 340px; background: #e9b8ff; bottom: 0; right: -80px; animation-delay: -6s; }
   .blob-3 { width: 260px; height: 260px; background: #ffc8e8; top: 40%; left: 55%; animation-delay: -12s; }
-
   @keyframes blobFloat {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    33%       { transform: translate(30px, -30px) scale(1.05); }
-    66%       { transform: translate(-20px, 20px) scale(0.97); }
+    0%, 100% { transform: translate(0,0) scale(1); }
+    33%       { transform: translate(30px,-30px) scale(1.05); }
+    66%       { transform: translate(-20px,20px) scale(0.97); }
   }
 
   .container {
-    position: relative;
-    z-index: 1;
-    max-width: 820px;
-    margin: 0 auto;
+    position: relative; z-index: 1;
+    max-width: 860px; margin: 0 auto;
     padding: 28px 20px 72px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+    display: flex; flex-direction: column; gap: 20px;
   }
 
   .glass {
@@ -88,8 +76,7 @@
     box-shadow: var(--glass-shadow);
     backdrop-filter: var(--blur);
     -webkit-backdrop-filter: var(--blur);
-    border-radius: 18px;
-    padding: 24px;
+    border-radius: 18px; padding: 24px;
   }
 
   .fade-up { opacity: 0; transform: translateY(20px); animation: fadeUp 0.5s ease forwards; }
@@ -99,176 +86,194 @@
   .fade-up:nth-child(4) { animation-delay: 0.26s; }
   .fade-up:nth-child(5) { animation-delay: 0.33s; }
   .fade-up:nth-child(6) { animation-delay: 0.40s; }
+  .fade-up:nth-child(7) { animation-delay: 0.47s; }
   @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
 
   /* ── Header ── */
   .header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
   .header-title h1 {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 2.2rem;
-    font-weight: 600;
-    background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    font-size: 2.3rem; font-weight: 600;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   }
   .header-title p { font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px; }
 
+  /* ── Badges ── */
   .badge {
-    font-size: 0.75rem;
-    font-weight: 500;
-    padding: 4px 10px;
-    border-radius: 999px;
-    border: 1px solid;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
+    font-size: 0.75rem; font-weight: 500; padding: 4px 10px;
+    border-radius: 999px; border: 1px solid;
+    display: inline-flex; align-items: center; gap: 5px;
   }
-  .badge.connected { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.35); color: var(--success); }
-  .badge.disconnected { background: rgba(75,122,97,0.1); border-color: rgba(75,122,97,0.3); color: var(--text-secondary); }
-  .badge.privacy { background: rgba(224,69,123,0.1); border-color: rgba(224,69,123,0.3); color: var(--accent); }
+  .badge.connected    { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.35); color: var(--success); }
+  .badge.disconnected { background: rgba(155,90,114,0.1);  border-color: rgba(155,90,114,0.3);  color: var(--text-secondary); }
+  .badge.privacy      { background: rgba(224,69,123,0.1);  border-color: rgba(224,69,123,0.3);  color: var(--accent); }
+  .badge.easy   { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.35); color: #065f46; }
+  .badge.medium { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.35); color: #92400e; }
+  .badge.hard   { background: rgba(239,68,68,0.12);  border-color: rgba(239,68,68,0.35);  color: #991b1b; }
   .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; display: inline-block; }
 
-  /* ── Panel title ── */
+  /* ── Typography ── */
   .panel-title {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin-bottom: 14px;
-    color: var(--text-primary);
+    font-size: 1.2rem; font-weight: 600;
+    margin-bottom: 14px; color: var(--text-primary);
   }
   .section-label {
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 7px;
+    font-size: 0.78rem; font-weight: 600; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 7px;
   }
 
   /* ── Inputs ── */
-  .key-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-
   input[type="password"], select, textarea {
-    width: 100%;
-    padding: 10px 14px;
-    border-radius: 10px;
+    width: 100%; padding: 10px 14px; border-radius: 10px;
     border: 1px solid var(--glass-border);
     background: rgba(255,255,255,0.38);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.88rem;
-    color: var(--text-primary);
-    outline: none;
+    font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
+    color: var(--text-primary); outline: none;
     transition: border 0.2s, box-shadow 0.2s;
   }
-  input[type="password"]:focus,
-  select:focus,
-  textarea:focus {
+  input[type="password"]:focus, select:focus, textarea:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(224,69,123,0.14);
   }
   select { cursor: pointer; }
   textarea { resize: vertical; }
-
   .key-input { flex: 1; min-width: 220px; width: auto; }
 
   .file-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 14px;
-    border-radius: 10px;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 14px; border-radius: 10px;
     border: 1px dashed rgba(224,69,123,0.45);
     background: rgba(224,69,123,0.07);
-    color: var(--accent);
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s;
-    white-space: nowrap;
+    color: var(--accent); font-size: 0.85rem; font-weight: 500;
+    cursor: pointer; transition: background 0.2s; white-space: nowrap;
   }
   .file-label:hover { background: rgba(224,69,123,0.14); }
   .file-label input { display: none; }
 
-  .key-status { margin-top: 10px; font-size: 0.82rem; color: var(--text-secondary); }
-
   /* ── Buttons ── */
   .btn {
-    padding: 10px 18px;
-    border-radius: 10px;
-    border: none;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.88rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+    padding: 10px 18px; border-radius: 10px; border: none;
+    font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600;
+    cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
     white-space: nowrap;
   }
   .btn:hover:not(:disabled) { transform: scale(1.03); }
   .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-  .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-secondary)); color: #fff; }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff;
+  }
   .btn-primary:hover:not(:disabled) { box-shadow: 0 4px 18px rgba(224,69,123,0.3); }
   .btn-ghost { background: rgba(255,255,255,0.35); border: 1px solid var(--glass-border); color: var(--text-primary); }
   .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+  .btn-danger { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: var(--error); }
 
   .generate-btn {
-    width: 100%;
-    padding: 16px;
-    font-size: 1rem;
-    font-weight: 600;
+    width: 100%; padding: 16px; font-size: 1rem; font-weight: 600;
     border-radius: 14px;
-    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    letter-spacing: 0.03em;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+    color: #fff; border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; letter-spacing: 0.03em;
     transition: transform 0.15s, box-shadow 0.2s, opacity 0.15s;
   }
   .generate-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(224,69,123,0.38); }
   .generate-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 
+  /* ── Quick-Select Supply Chips ── */
+  .supply-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .supply-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 12px; border-radius: 999px;
+    border: 1px solid rgba(224,69,123,0.3);
+    background: rgba(255,255,255,0.4);
+    font-size: 0.82rem; font-weight: 500;
+    color: var(--text-primary); cursor: pointer;
+    transition: background 0.18s, border-color 0.18s, transform 0.12s;
+    user-select: none;
+  }
+  .supply-chip:hover { background: rgba(224,69,123,0.1); border-color: var(--accent); transform: scale(1.04); }
+  .supply-chip.selected { background: rgba(224,69,123,0.15); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .chip-img { font-size: 1rem; line-height: 1; }
+
   /* ── Controls row ── */
   .controls-row { display: flex; gap: 16px; flex-wrap: wrap; }
   .controls-row > div { flex: 1; min-width: 160px; }
 
+  /* ── Key status ── */
+  .key-status { margin-top: 10px; font-size: 0.82rem; color: var(--text-secondary); }
+  .key-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
   /* ── Response area ── */
   .response-area {
-    min-height: 80px;
-    border-radius: 12px;
+    min-height: 80px; border-radius: 12px;
     background: rgba(255,255,255,0.25);
     border: 1px solid var(--glass-border);
-    padding: 20px;
-    font-size: 0.92rem;
-    line-height: 1.75;
+    padding: 20px; font-size: 0.92rem; line-height: 1.75;
     word-break: break-word;
   }
   .response-area.empty { color: var(--text-secondary); font-style: italic; }
 
-  /* Markdown rendered output */
   .response-area h1, .response-area h2, .response-area h3 {
     font-family: 'Cormorant Garamond', serif;
-    color: var(--text-primary);
-    margin: 1em 0 0.4em;
+    color: var(--text-primary); margin: 1em 0 0.4em;
   }
   .response-area h1 { font-size: 1.6rem; }
   .response-area h2 { font-size: 1.25rem; }
   .response-area h3 { font-size: 1.05rem; }
-  .response-area p { margin: 0.5em 0; }
+  .response-area p  { margin: 0.5em 0; }
   .response-area ul, .response-area ol { padding-left: 1.4em; margin: 0.5em 0; }
   .response-area li { margin: 0.25em 0; }
   .response-area strong { color: var(--accent); }
   .response-area hr { border: none; border-top: 1px solid var(--glass-border); margin: 1.2em 0; }
 
+  /* ── Result toolbar ── */
+  .result-toolbar {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  #difficultyBadge { display: none; }
+
+  /* ── Substitution ── */
+  .sub-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 14px; }
+  .sub-input { flex: 1; min-width: 180px; width: auto; }
+  .sub-result {
+    margin-top: 10px; padding: 12px 16px; border-radius: 10px;
+    background: rgba(255,255,255,0.3); border: 1px solid var(--glass-border);
+    font-size: 0.88rem; line-height: 1.6; display: none;
+  }
+  .sub-result.visible { display: block; }
+  .sub-result strong { color: var(--accent); }
+
+  /* ── History accordion ── */
+  .history-item {
+    border: 1px solid var(--glass-border);
+    border-radius: 12px; overflow: hidden;
+    background: rgba(255,255,255,0.2);
+    margin-bottom: 10px;
+  }
+  .history-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 16px; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .history-header:hover { background: rgba(224,69,123,0.07); }
+  .history-meta { font-size: 0.82rem; color: var(--text-secondary); }
+  .history-title { font-weight: 600; font-size: 0.9rem; }
+  .history-chevron { font-size: 0.8rem; color: var(--text-secondary); transition: transform 0.2s; }
+  .history-body {
+    padding: 0 16px; max-height: 0; overflow: hidden;
+    transition: max-height 0.35s ease, padding 0.2s;
+  }
+  .history-body.open { max-height: 600px; padding: 4px 16px 16px; }
+  .history-item.open .history-chevron { transform: rotate(180deg); }
+
   /* ── Banners ── */
   .banner {
-    border-radius: 12px;
-    padding: 12px 16px;
-    font-size: 0.87rem;
-    font-weight: 500;
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
+    border-radius: 12px; padding: 12px 16px;
+    font-size: 0.87rem; font-weight: 500;
+    display: flex; align-items: flex-start; gap: 10px;
     animation: fadeUp 0.25s ease;
   }
   .banner.error   { background: rgba(239,68,68,0.1);   border: 1px solid rgba(239,68,68,0.3);   color: #b91c1c; }
@@ -279,6 +284,28 @@
   .mt-10 { margin-top: 10px; }
   .mt-16 { margin-top: 16px; }
   .flex-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .empty-state { color: var(--text-secondary); font-size: 0.87rem; text-align: center; padding: 20px 0; font-style: italic; }
+  #historyPanel { display: none; }
+  #historyPanel.visible { display: block; }
+
+  /* ── Print styles ── */
+  @media print {
+    body { background: white !important; animation: none !important; }
+    .blob, .no-print { display: none !important; }
+    .container { padding: 0 !important; }
+    .glass { box-shadow: none !important; backdrop-filter: none !important; border: 1px solid #ddd !important; background: white !important; }
+    #apiSection, #controlsSection, #generateBtn, #errorBanner,
+    #suppliesSection, #substitutionSection, #historyPanel,
+    .result-toolbar .btn, #difficultyBadge { display: none !important; }
+    #resultsPanel { display: block !important; }
+    .print-only { display: block !important; }
+  }
+  .print-only { display: none; }
+  .print-lines { margin-top: 16px; }
+  .print-line {
+    border-bottom: 1px solid #ccc;
+    height: 28px; margin-bottom: 4px;
+  }
 </style>
 </head>
 <body>
@@ -297,7 +324,7 @@
   </header>
 
   <!-- API Key Panel -->
-  <section class="glass fade-up">
+  <section class="glass fade-up" id="apiSection">
     <div class="panel-title">API Key</div>
     <div class="key-row">
       <input type="password" class="key-input" id="keyInput" placeholder="sk-…" autocomplete="off">
@@ -309,13 +336,13 @@
     </div>
     <div class="key-status" id="keyStatus">No key loaded yet.</div>
     <div class="mt-10 flex-row">
-      <span class="badge privacy">🔒 Key stored in memory only — never persisted</span>
-      <button class="btn btn-ghost btn-sm" onclick="clearKey()">Clear Key</button>
+      <span class="badge privacy">🔒 Stored in memory only — never persisted</span>
+      <button class="btn btn-ghost btn-sm no-print" onclick="clearKey()">Clear Key</button>
     </div>
   </section>
 
-  <!-- Controls -->
-  <section class="glass fade-up">
+  <!-- Settings + Quick-Select -->
+  <section class="glass fade-up" id="controlsSection">
     <div class="panel-title">Experiment Settings</div>
     <div class="controls-row">
       <div>
@@ -328,37 +355,151 @@
         </select>
       </div>
     </div>
+
     <div class="mt-16">
+      <div class="section-label">Quick-Select Supplies</div>
+      <div class="supply-chips" id="supplyChips"></div>
+    </div>
+
+    <div class="mt-16" id="suppliesSection">
       <div class="section-label">Available Supplies</div>
-      <textarea id="suppliesInput" rows="5" placeholder="List what you have on hand, e.g.:&#10;baking soda, vinegar, food coloring, a bowl, measuring cups, paper towels, salt, sugar, a flashlight"></textarea>
+      <textarea id="suppliesInput" rows="4" placeholder="Click chips above or type your supplies here, e.g.: baking soda, vinegar, food coloring, a bowl…"></textarea>
     </div>
   </section>
 
-  <!-- Generate Button -->
-  <button class="generate-btn fade-up" id="generateBtn" onclick="generateExperiment()">
+  <!-- Generate -->
+  <button class="generate-btn fade-up no-print" id="generateBtn" onclick="generateExperiment()">
     Generate Experiment →
   </button>
 
   <!-- Error Banner -->
-  <div id="errorBanner" style="display:none"></div>
+  <div id="errorBanner" style="display:none" class="no-print"></div>
 
   <!-- Results -->
   <section class="glass fade-up" id="resultsPanel">
-    <div class="panel-title">Your Experiment</div>
+    <div class="result-toolbar">
+      <div class="panel-title" style="margin-bottom:0;flex:1">Your Experiment</div>
+      <span id="difficultyBadge" class="badge">–</span>
+      <button class="btn btn-ghost btn-sm no-print" id="printBtn" onclick="printWorksheet()" style="display:none">🖨️ Print Worksheet</button>
+    </div>
     <div class="response-area empty" id="resultContent">
       Your experiment will appear here once you click Generate…
     </div>
+
+    <!-- Printable observation worksheet (only visible when printing) -->
+    <div class="print-only" id="worksheetSection">
+      <hr style="margin:20px 0;border:none;border-top:1px solid #ddd">
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;margin-bottom:8px">📋 Observation Worksheet</h2>
+      <p style="font-size:0.85rem;color:#666;margin-bottom:16px">Record what you notice during each step of the experiment.</p>
+      <strong>Observations &amp; Results:</strong>
+      <div class="print-lines" id="printLines"></div>
+    </div>
+  </section>
+
+  <!-- Supply Substitution -->
+  <section class="glass fade-up no-print" id="substitutionSection" style="display:none">
+    <div class="panel-title">🔄 Missing a Supply?</div>
+    <p style="font-size:0.87rem;color:var(--text-secondary);margin-bottom:12px">
+      Tell us which supply you don't have — we'll suggest a substitution.
+    </p>
+    <div class="sub-row">
+      <input type="text" class="sub-input" id="subInput" placeholder="e.g. vinegar, baking soda…">
+      <button class="btn btn-primary" id="subBtn" onclick="getSubstitution()">Find Substitute</button>
+    </div>
+    <div class="sub-result" id="subResult"></div>
+  </section>
+
+  <!-- History -->
+  <section class="glass fade-up no-print" id="historyPanel">
+    <div class="panel-title">📜 Past Experiments</div>
+    <div id="historyList"></div>
   </section>
 
 </div>
 
 <script>
 // ─────────────────────────────────────────────
+// SUPPLY CATALOG
+// ─────────────────────────────────────────────
+const SUPPLIES = [
+  { emoji: '🧪', name: 'Vinegar' },
+  { emoji: '🥄', name: 'Baking soda' },
+  { emoji: '🎈', name: 'Balloons' },
+  { emoji: '📎', name: 'Paper clips' },
+  { emoji: '🔴', name: 'Rubber bands' },
+  { emoji: '🧂', name: 'Salt' },
+  { emoji: '🍬', name: 'Sugar' },
+  { emoji: '🌈', name: 'Food coloring' },
+  { emoji: '💡', name: 'Flashlight' },
+  { emoji: '🧲', name: 'Magnets' },
+  { emoji: '🕯️', name: 'Candles' },
+  { emoji: '🧻', name: 'Paper towels' },
+  { emoji: '📏', name: 'Ruler' },
+  { emoji: '🥛', name: 'Milk' },
+  { emoji: '🍋', name: 'Lemon juice' },
+  { emoji: '🌡️', name: 'Thermometer' },
+  { emoji: '✏️', name: 'Pencil' },
+  { emoji: '🔋', name: 'Batteries' },
+  { emoji: '🧴', name: 'Dish soap' },
+  { emoji: '💧', name: 'Water' },
+];
+
+// ─────────────────────────────────────────────
 // STATE
 // ─────────────────────────────────────────────
 let apiKey = '';
+let experimentHistory = [];
+let lastExperimentText = '';
 
-const SYSTEM_PROMPT = `You are a science experiment designer for K-12 students. Given a grade level and a list of household supplies, generate a fun, safe, and educational science experiment. Include: a title, the scientific concept being demonstrated, a materials list, step-by-step instructions, and what to observe or measure.`;
+const SYSTEM_PROMPT = `You are a science experiment designer for K-12 students. Given a grade level and a list of household supplies, generate a fun, safe, and educational science experiment.
+
+Format your response with these exact sections:
+**Difficulty:** Easy / Medium / Hard (choose one based on the grade level)
+
+Then include: a title, the scientific concept being demonstrated, a materials list, step-by-step instructions, and what to observe or measure.`;
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+function init() {
+  buildSupplyChips();
+  buildPrintLines();
+}
+
+function buildSupplyChips() {
+  const container = document.getElementById('supplyChips');
+  SUPPLIES.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'supply-chip';
+    btn.dataset.name = s.name;
+    btn.innerHTML = `<span class="chip-img">${s.emoji}</span>${s.name}`;
+    btn.onclick = () => toggleChip(btn, s.name);
+    container.appendChild(btn);
+  });
+}
+
+function toggleChip(btn, name) {
+  btn.classList.toggle('selected');
+  const textarea = document.getElementById('suppliesInput');
+  const current = textarea.value.trim();
+  const items = current ? current.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const idx = items.findIndex(i => i.toLowerCase() === name.toLowerCase());
+  if (btn.classList.contains('selected')) {
+    if (idx === -1) items.push(name);
+  } else {
+    if (idx !== -1) items.splice(idx, 1);
+  }
+  textarea.value = items.join(', ');
+}
+
+function buildPrintLines() {
+  const container = document.getElementById('printLines');
+  for (let i = 0; i < 12; i++) {
+    const div = document.createElement('div');
+    div.className = 'print-line';
+    container.appendChild(div);
+  }
+}
 
 // ─────────────────────────────────────────────
 // KEY MANAGEMENT
@@ -387,17 +528,12 @@ function handleFileUpload(event) {
       apiKey = match[1].trim();
       document.getElementById('keyInput').value = apiKey;
     } else {
-      // try first non-empty line as a bare key
       const line = text.split('\n').map(l => l.trim()).find(l => l.startsWith('sk-'));
-      if (line) {
-        apiKey = line;
-        document.getElementById('keyInput').value = apiKey;
-      }
+      if (line) { apiKey = line; document.getElementById('keyInput').value = apiKey; }
     }
     updateKeyBadge();
   };
   reader.readAsText(file);
-  // reset input so the same file can be re-uploaded
   event.target.value = '';
 }
 
@@ -420,18 +556,11 @@ function updateKeyBadge() {
 // ─────────────────────────────────────────────
 async function generateExperiment() {
   clearBanner();
-
   const grade = document.getElementById('gradeSelect').value;
   const supplies = document.getElementById('suppliesInput').value.trim();
 
-  if (!supplies) {
-    showBanner('warning', 'Please list your available supplies first.');
-    return;
-  }
-  if (!apiKey) {
-    showBanner('error', 'Enter your OpenAI API key to continue.');
-    return;
-  }
+  if (!supplies) { showBanner('warning', 'Please list your available supplies first.'); return; }
+  if (!apiKey)   { showBanner('error', 'Enter your OpenAI API key to continue.'); return; }
 
   const btn = document.getElementById('generateBtn');
   btn.disabled = true;
@@ -441,10 +570,35 @@ async function generateExperiment() {
   resultEl.className = 'response-area';
   resultEl.textContent = '';
 
+  // hide difficulty badge while generating
+  const diffBadge = document.getElementById('difficultyBadge');
+  diffBadge.style.display = 'none';
+  document.getElementById('printBtn').style.display = 'none';
+  document.getElementById('substitutionSection').style.display = 'none';
+  document.getElementById('subResult').className = 'sub-result';
+
   const userMessage = `Grade level: ${grade}\n\nAvailable supplies:\n${supplies}`;
 
   try {
-    await callOpenAIStream(apiKey, SYSTEM_PROMPT, userMessage, resultEl);
+    const fullText = await callOpenAIStream(apiKey, SYSTEM_PROMPT, userMessage, resultEl);
+    lastExperimentText = fullText;
+
+    // Extract difficulty
+    const diffMatch = fullText.match(/\*\*Difficulty:\*\*\s*(Easy|Medium|Hard)/i);
+    if (diffMatch) {
+      const level = diffMatch[1];
+      diffBadge.textContent = '⭐ ' + level;
+      diffBadge.className = 'badge ' + level.toLowerCase();
+      diffBadge.style.display = 'inline-flex';
+    }
+
+    // Show print + substitution controls
+    document.getElementById('printBtn').style.display = '';
+    document.getElementById('substitutionSection').style.display = '';
+
+    // Save to history
+    saveToHistory(grade, supplies, fullText);
+
   } catch (err) {
     handleApiError(err);
     resultEl.className = 'response-area empty';
@@ -461,20 +615,15 @@ async function generateExperiment() {
 async function callOpenAIStream(key, system, user, targetEl) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 45000);
+  let fullText = '';
 
   try {
     const res = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + key
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: user }
-        ],
+        messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
         stream: true
       }),
       signal: controller.signal
@@ -493,7 +642,6 @@ async function callOpenAIStream(key, system, user, targetEl) {
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
-    let fullText = '';
 
     while (true) {
       const { done, value } = await reader.read();
@@ -508,19 +656,13 @@ async function callOpenAIStream(key, system, user, targetEl) {
         try {
           const obj = JSON.parse(data);
           const delta = obj.choices?.[0]?.delta?.content;
-          if (delta) {
-            fullText += delta;
-            // render markdown as we go
-            targetEl.innerHTML = marked.parse(fullText);
-          }
+          if (delta) { fullText += delta; targetEl.innerHTML = marked.parse(fullText); }
         } catch {}
       }
     }
 
-    // final render
-    if (fullText) {
-      targetEl.innerHTML = marked.parse(fullText);
-    }
+    if (fullText) targetEl.innerHTML = marked.parse(fullText);
+    return fullText;
 
   } catch (e) {
     clearTimeout(timeout);
@@ -529,22 +671,138 @@ async function callOpenAIStream(key, system, user, targetEl) {
   }
 }
 
+// non-streaming call (used for substitution)
+async function callOpenAI(key, system, user) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
+  try {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'system', content: system }, { role: 'user', content: user }]
+      }),
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      const msg = err?.error?.message || res.statusText;
+      if (res.status === 401) throw new Error('AUTH:' + msg);
+      if (res.status === 429) throw new Error('RATE:' + msg);
+      throw new Error(msg);
+    }
+    const data = await res.json();
+    return data.choices[0].message.content;
+  } catch (e) {
+    clearTimeout(timeout);
+    if (e.name === 'AbortError') throw new Error('TIMEOUT');
+    throw e;
+  }
+}
+
+// ─────────────────────────────────────────────
+// SUPPLY SUBSTITUTION
+// ─────────────────────────────────────────────
+async function getSubstitution() {
+  const supply = document.getElementById('subInput').value.trim();
+  if (!supply) return;
+  if (!apiKey) { showBanner('error', 'API key required.'); return; }
+
+  const btn = document.getElementById('subBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳…';
+
+  const resultEl = document.getElementById('subResult');
+  resultEl.className = 'sub-result visible';
+  resultEl.textContent = 'Finding a substitution…';
+
+  const context = lastExperimentText
+    ? `The experiment being done is:\n${lastExperimentText.slice(0, 800)}\n\n`
+    : '';
+
+  const prompt = `${context}The user doesn't have "${supply}". Suggest 1–2 common household substitutes they could use instead. Be brief and practical.`;
+
+  try {
+    const reply = await callOpenAI(apiKey, 'You are a helpful science teacher.', prompt);
+    resultEl.innerHTML = `<strong>Substitute for ${escHtml(supply)}:</strong><br>${marked.parse(reply)}`;
+  } catch (err) {
+    resultEl.textContent = '❌ ' + (err.message || 'Something went wrong.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Find Substitute';
+  }
+}
+
+// ─────────────────────────────────────────────
+// PRINT WORKSHEET
+// ─────────────────────────────────────────────
+function printWorksheet() {
+  window.print();
+}
+
+// ─────────────────────────────────────────────
+// HISTORY
+// ─────────────────────────────────────────────
+function saveToHistory(grade, supplies, text) {
+  // Extract title from first heading in the response
+  const titleMatch = text.match(/#{1,3}\s+(.+)/);
+  const title = titleMatch ? titleMatch[1].replace(/\*\*/g, '') : 'Experiment';
+
+  experimentHistory.unshift({
+    id: Date.now(),
+    grade, supplies, text, title,
+    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  });
+
+  renderHistory();
+  document.getElementById('historyPanel').classList.add('visible');
+}
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  if (!experimentHistory.length) {
+    list.innerHTML = '<div class="empty-state">No experiments yet.</div>';
+    return;
+  }
+  list.innerHTML = experimentHistory.map(item => `
+    <div class="history-item" id="hist-${item.id}">
+      <div class="history-header" onclick="toggleHistory(${item.id})">
+        <div>
+          <div class="history-title">${escHtml(item.title)}</div>
+          <div class="history-meta">Grade ${escHtml(item.grade)} · ${escHtml(item.timestamp)}</div>
+        </div>
+        <span class="history-chevron">▼</span>
+      </div>
+      <div class="history-body" id="hist-body-${item.id}">
+        <div class="response-area" style="margin-top:0;border:none;background:transparent;padding:0">
+          ${marked.parse(item.text)}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleHistory(id) {
+  const item = document.getElementById('hist-' + id);
+  const body = document.getElementById('hist-body-' + id);
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  item.classList.toggle('open', !isOpen);
+}
+
 // ─────────────────────────────────────────────
 // ERROR HANDLING
 // ─────────────────────────────────────────────
 function handleApiError(err) {
   const msg = err.message || '';
-  if (msg.startsWith('AUTH:')) {
-    showBanner('error', '❌ Invalid API key. Check your key and try again.');
-  } else if (msg.startsWith('RATE:')) {
-    showBanner('warning', '⏳ Rate limit reached. Wait a moment and try again.');
-  } else if (msg === 'TIMEOUT') {
-    showBanner('warning', '⏱ Request timed out. The model may be overloaded — try again.');
-  } else if (msg.toLowerCase().includes('network') || msg.toLowerCase().includes('fetch')) {
-    showBanner('error', '🌐 Network error. Check your connection.');
-  } else {
-    showBanner('error', '❌ ' + msg);
-  }
+  if (msg.startsWith('AUTH:'))    showBanner('error', '❌ Invalid API key. Check your key and try again.');
+  else if (msg.startsWith('RATE:')) showBanner('warning', '⏳ Rate limit reached. Wait a moment and try again.');
+  else if (msg === 'TIMEOUT')     showBanner('warning', '⏱ Request timed out. The model may be overloaded — try again.');
+  else if (msg.toLowerCase().includes('network') || msg.toLowerCase().includes('fetch'))
+                                  showBanner('error', '🌐 Network error. Check your connection.');
+  else showBanner('error', '❌ ' + msg);
 }
 
 let bannerTimer = null;
@@ -555,7 +813,6 @@ function showBanner(type, message) {
   container.style.display = '';
   bannerTimer = setTimeout(clearBanner, 9000);
 }
-
 function clearBanner() {
   if (bannerTimer) clearTimeout(bannerTimer);
   const container = document.getElementById('errorBanner');
@@ -565,11 +822,14 @@ function clearBanner() {
 
 function escHtml(str) {
   return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+// ─────────────────────────────────────────────
+// BOOT
+// ─────────────────────────────────────────────
+window.addEventListener('load', init);
 </script>
 </body>
 </html>

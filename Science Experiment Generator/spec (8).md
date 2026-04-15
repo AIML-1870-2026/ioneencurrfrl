@@ -54,6 +54,40 @@ Ignore these Switchboard features (not needed here):
 This project uses unstructured (free-form) responses only.
 Render the model's markdown output as formatted HTML.
 
+## Stretch Challenges
+
+### 1. Save and Display Previously Generated Experiments
+Keep a history of all generated experiments in the current session. Display
+them in a scrollable list or accordion below the results area so the user
+can revisit past experiments without regenerating them.
+
+### 2. Predefined Supply List with Quick-Select
+Include a predefined list of common household supplies (e.g., vinegar,
+baking soda, balloons, paper clips, rubber bands). Display them as
+clickable buttons or checkboxes so the user can quickly add them to the
+supplies field without typing.
+
+### 3. Images of Common Supplies
+Display a small image next to each predefined supply item for visual
+reference. This helps younger students identify materials at a glance.
+
+### 4. Supply Substitution Feature
+After an experiment is generated, include a button that lets the user flag
+a supply they don't have. The app will send a follow-up prompt to OpenAI
+asking for a suitable substitution, and display the suggestion inline.
+
+### 5. Printable Observation Worksheets
+After an experiment is generated, provide a "Print Worksheet" button that
+opens a print-friendly version of the page containing the experiment title,
+materials list, steps, and blank lines for the student to record their
+observations and results.
+
+### 6. Difficulty Ratings
+Display a difficulty rating (e.g., Easy / Medium / Hard) for each generated
+experiment. This can either be parsed from the model's response or generated
+as a separate follow-up API call asking the model to rate the experiment's
+complexity for the selected grade level.
+
 ## Deployment
 - Single index.html file
 - Deploy to the GitHub organization for this class via GitHub Pages
