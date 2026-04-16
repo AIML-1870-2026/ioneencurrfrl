@@ -1158,7 +1158,7 @@ function buildSentryRows(data) {
   const sorted = sortSentryArr(data, S.sentrySort, S.sentryDir);
   for (const obj of sorted) {
     const probStr = obj.prob < 1e-10 ? '<10⁻¹⁰' : (obj.prob*100).toExponential(2)+'%';
-    const diamStr = obj.diameter ? f0(obj.diameter*1000)+' m' : 'N/A';
+    const diamStr = obj.diameter ? f0(obj.diameter)+' m' : 'N/A';
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -1328,7 +1328,8 @@ async function renderGlobeTab() {
     document.getElementById('ic-date').textContent  = ast.date;
     document.getElementById('ic-miss').textContent  = `${f2(ast.missLD)} LD`;
     document.getElementById('ic-vel').textContent   = `${f2(ast.velocity)} km/s`;
-    document.getElementById('ic-diam').textContent  = ast.diameter ? `~${ast.diameter.toFixed(0)} m` : 'unknown';
+    const avgDiam = (ast.diamMin != null && ast.diamMax != null) ? (ast.diamMin + ast.diamMax) / 2 : null;
+    document.getElementById('ic-diam').textContent  = avgDiam != null ? `~${avgDiam.toFixed(0)} m` : 'unknown';
     document.getElementById('ic-pha').textContent   = ast.isPHA ? '⚠ Potentially Hazardous Asteroid' : '';
     card.style.display = 'block';
   }
